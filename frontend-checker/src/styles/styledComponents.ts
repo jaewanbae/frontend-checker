@@ -199,8 +199,7 @@ export const Text = styled.p<{
 export const MobileOnly = styled.div`
   display: block;
 
-  @media (min-width: ${({ theme }: { theme: Theme }) =>
-      theme.breakpoints.tablet}) {
+  @media (min-width: ${({ theme }) => theme.breakpoints.tablet}) {
     display: none;
   }
 `;
@@ -208,8 +207,7 @@ export const MobileOnly = styled.div`
 export const DesktopOnly = styled.div`
   display: none;
 
-  @media (min-width: ${({ theme }: { theme: Theme }) =>
-      theme.breakpoints.tablet}) {
+  @media (min-width: ${({ theme }) => theme.breakpoints.tablet}) {
     display: block;
   }
 `;

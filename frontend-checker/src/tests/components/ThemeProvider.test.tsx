@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '../../styles/ThemeProvider';
 import { Container, Heading, Text } from '../../styles/styledComponents';
 
@@ -13,24 +13,24 @@ const TestComponent: React.FC = () => (
 
 describe('ThemeProvider', () => {
   it('renders children with theme context', () => {
-    const { getByText } = render(
+    render(
       <ThemeProvider>
         <TestComponent />
       </ThemeProvider>
     );
 
-    expect(getByText('Test Heading')).toBeInTheDocument();
-    expect(getByText('Test text content')).toBeInTheDocument();
+    expect(screen.getByText('Test Heading')).toBeInTheDocument();
+    expect(screen.getByText('Test text content')).toBeInTheDocument();
   });
 
   it('applies global styles', () => {
-    const { container } = render(
+    render(
       <ThemeProvider>
         <TestComponent />
       </ThemeProvider>
     );
 
     // Check that the root element has the theme applied
-    expect(container.firstChild).toBeInTheDocument();
+    expect(screen.getByText('Test Heading')).toBeInTheDocument();
   });
 });

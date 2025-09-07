@@ -19,6 +19,11 @@ Build a **ReactJS with TypeScript** application that implements a playable Check
 
 ### 1.2 Project Structure Design
 
+- [x] Create all component files with proper structure
+- [x] Set up hooks for game logic and state management
+- [x] Create utility functions for game mechanics
+- [x] Organize test structure
+
 ```
 src/
 ├── components/
@@ -57,17 +62,17 @@ src/
 
 ### 1.3 Core Type Definitions
 
-- [ ] Define game state interfaces (Board, Piece, Player, Game)
-- [ ] Define move validation types
-- [ ] Set up enums for piece types, player colors, game states
-- [ ] Create drag and drop types for Pragmatic Drag and Drop
+- [x] Define game state interfaces (Board, Piece, Player, Game)
+- [x] Define move validation types
+- [x] Set up enums for piece types, player colors, game states
+- [x] Create drag and drop types for Pragmatic Drag and Drop
 
 ### 1.4 Dependencies Setup
 
-- [ ] Install Pragmatic Drag and Drop (`@dnd-kit/core`, `@dnd-kit/utilities`)
-- [ ] Install Styled Components (`styled-components`, `@types/styled-components`)
-- [ ] Install additional utilities (date-fns for timers, etc.)
-- [ ] Set up development dependencies
+- [x] Install Pragmatic Drag and Drop (`@dnd-kit/core`, `@dnd-kit/utilities`)
+- [x] Install Styled Components (`styled-components`, `@types/styled-components`)
+- [x] Install additional utilities (date-fns for timers, etc.)
+- [x] Set up development dependencies
 
 ---
 

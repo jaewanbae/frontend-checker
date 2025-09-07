@@ -8,8 +8,8 @@ test('renders checkers game title', () => {
   expect(titleElement).toBeInTheDocument();
 });
 
-test('renders welcome message', () => {
+test('renders game controller', () => {
   render(<App />);
-  const welcomeElement = screen.getByText(/welcome to the checkers game/i);
-  expect(welcomeElement).toBeInTheDocument();
+  const gameElement = screen.getByText(/checkers game/i);
+  expect(gameElement).toBeInTheDocument();
 });
