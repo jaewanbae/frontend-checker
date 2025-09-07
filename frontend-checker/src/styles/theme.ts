@@ -27,10 +27,10 @@ export const theme = {
     textLight: '#ffffff',
 
     // Interactive colors
-    hover: 'rgba(52, 152, 219, 0.1)',
-    selected: 'rgba(52, 152, 219, 0.3)',
-    validMove: 'rgba(39, 174, 96, 0.3)',
-    invalidMove: 'rgba(231, 76, 60, 0.3)',
+    hover: '#e3f2fd',
+    selected: '#bbdefb',
+    validMove: '#c8e6c9',
+    invalidMove: '#ffcdd2',
   },
 
   spacing: {
@@ -51,10 +51,10 @@ export const theme = {
   },
 
   shadows: {
-    sm: '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
-    md: '0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)',
-    lg: '0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23)',
-    xl: '0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)',
+    sm: '0 1px 3px #1f1f1f, 0 1px 2px #3d3d3d',
+    md: '0 3px 6px #2a2a2a, 0 3px 6px #333333',
+    lg: '0 10px 20px #2d2d2d, 0 6px 6px #333333',
+    xl: '0 14px 28px #2a2a2a, 0 10px 10px #2d2d2d',
   },
 
   transitions: {

@@ -155,7 +155,7 @@ const minimax = (
 
 // Make a move on the board (creates a new board state)
 const makeMoveOnBoard = (board: Board, move: Move): Board => {
-  const newBoard = { ...board, squares: board.squares.map(row => [...row]) };
+  const newBoard = { ...board, squares: board.squares.map((row) => [...row]) };
 
   // Remove piece from original position
   newBoard.squares[move.from.row][move.from.col] = null;
@@ -232,8 +232,8 @@ export const analyzePosition = (
   const bestMove = getBestMove(board, color);
   const validMoves = getValidMovesForPlayer(board, color);
 
-  const threats = validMoves.filter(move => move.isCapture);
-  const opportunities = validMoves.filter(move => !move.isCapture);
+  const threats = validMoves.filter((move) => move.isCapture);
+  const opportunities = validMoves.filter((move) => !move.isCapture);
 
   return {
     score,

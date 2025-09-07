@@ -29,7 +29,7 @@ const PieceContainer = styled.div<{
     cursor: grabbing;
     transform: scale(1.1);
     z-index: 1000;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px #2a2a2a;
   `}
 
   transition: ${({ theme }) => theme.transitions.fast};
@@ -55,7 +55,7 @@ const PieceContainer = styled.div<{
       transform: translate(-50%, -50%);
       font-size: 0.8em;
       color: #ffd700;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      text-shadow: 1px 1px 2px #2a2a2a;
     }
   `}
 `;

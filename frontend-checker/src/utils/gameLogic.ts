@@ -116,7 +116,7 @@ export const setPieceAt = (
     return board;
   }
 
-  const newSquares = board.squares.map(row => [...row]);
+  const newSquares = board.squares.map((row) => [...row]);
   newSquares[position.row][position.col] = piece;
 
   return {
@@ -214,9 +214,9 @@ export const getPiecesThatCanCapture = (
   color: PieceColor
 ): Piece[] => {
   const pieces = getPiecesByColor(board, color);
-  return pieces.filter(piece => {
+  return pieces.filter((piece) => {
     const directions = getDiagonalDirections(piece);
-    return directions.some(direction => {
+    return directions.some((direction) => {
       const capturePosition: Position = {
         row: piece.position.row + direction.row * GAME_RULES.CAPTURE_DISTANCE,
         col: piece.position.col + direction.col * GAME_RULES.CAPTURE_DISTANCE,

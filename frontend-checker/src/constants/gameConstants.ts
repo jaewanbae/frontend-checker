@@ -4,9 +4,13 @@ export const GAME_CONFIG = {
   PIECES_PER_PLAYER: 12,
   LIGHT_PIECE_ROWS: 3, // Top 3 rows for light pieces
   DARK_PIECE_ROWS: 3, // Bottom 3 rows for dark pieces
-  BOARD_WIDTH: 600,
-  BOARD_HEIGHT: 600,
-  MAX_WIDTH: 600,
+  BOARD_WIDTH: 800,
+  BOARD_HEIGHT: 800,
+  MAX_WIDTH: 800,
+  // Responsive sizing
+  MIN_BOARD_SIZE: 400,
+  MAX_BOARD_SIZE: 1000,
+  BOARD_SIZE_RATIO: 0.8, // 80% of viewport width/height
 } as const;
 
 // Board Layout Constants
@@ -26,7 +30,7 @@ export const GAME_RULES = {
   CAPTURE_DISTANCE: 2,
   REGULAR_MOVE_DISTANCE: 1,
   MANDATORY_CAPTURE: true,
-  KING_MOVEMENT: 'all_directions', // or 'forward_only'
+  KING_MOVEMENT: 'allDirections',
   MULTIPLE_JUMPS: true,
 } as const;
 
@@ -40,6 +44,11 @@ export const UI_CONFIG = {
   GAP_LARGE: '24px',
   GAP_MEDIUM: '16px',
   GAP_SMALL: '8px',
+  // Responsive breakpoints (desktop/laptop only)
+  BREAKPOINTS: {
+    DESKTOP: '1024px',
+    LARGE_DESKTOP: '1440px',
+  },
 } as const;
 
 // Piece Movement Constants
@@ -51,12 +60,12 @@ export const MOVEMENT = {
     { row: 1, col: 1 }, // Down-right
   ],
   LIGHT_PIECE_DIRECTIONS: [
-    { row: -1, col: -1 }, // Up-left
-    { row: -1, col: 1 }, // Up-right
+    { row: 1, col: -1 }, // Up-left
+    { row: 1, col: 1 }, // Up-right
   ],
   DARK_PIECE_DIRECTIONS: [
-    { row: 1, col: -1 }, // Down-left
-    { row: 1, col: 1 }, // Down-right
+    { row: -1, col: -1 }, // Down-left
+    { row: -1, col: 1 }, // Down-right
   ],
 };
 

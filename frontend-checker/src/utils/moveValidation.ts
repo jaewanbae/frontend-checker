@@ -59,7 +59,7 @@ export const validateMove = (
     // Check if piece can move in this direction
     const directions = getDiagonalDirections(piece);
     const isValidDirection = directions.some(
-      direction =>
+      (direction) =>
         from.row + direction.row === to.row &&
         from.col + direction.col === to.col
     );
@@ -104,7 +104,7 @@ export const getValidMovesForPiece = (
 
   // Check if player must capture
   const mustCapturePieces = getPiecesThatCanCapture(board, piece.color);
-  const canThisPieceCapture = mustCapturePieces.some(p => p.id === piece.id);
+  const canThisPieceCapture = mustCapturePieces.some((p) => p.id === piece.id);
 
   for (const direction of directions) {
     // Check normal move (1 square)
@@ -236,7 +236,7 @@ export const getBestCaptureMove = (
   color: PieceColor
 ): Move | null => {
   const captureMoves = getValidMovesForPlayer(board, color).filter(
-    move => move.isCapture
+    (move) => move.isCapture
   );
 
   if (captureMoves.length === 0) {

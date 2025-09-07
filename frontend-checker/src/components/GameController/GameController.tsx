@@ -13,22 +13,56 @@ const GameContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${UI_CONFIG.GAP_LARGE};
-  padding: ${UI_CONFIG.GAP_LARGE};
-  min-height: ${UI_CONFIG.MIN_HEIGHT};
+  gap: ${UI_CONFIG.GAP_MEDIUM};
+  padding: ${UI_CONFIG.GAP_MEDIUM};
+  height: 100vh;
+  max-height: 100vh;
   background-color: ${({ theme }) => theme.colors.background};
+  width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
+    gap: ${UI_CONFIG.GAP_SMALL};
+    padding: ${UI_CONFIG.GAP_SMALL};
+  }
+
+  @media (max-height: 800px) {
+    gap: 4px;
+    padding: 8px;
+  }
 `;
 
 const GameHeader = styled.div`
   text-align: center;
-  margin-bottom: ${UI_CONFIG.GAP_MEDIUM};
+  margin-bottom: ${UI_CONFIG.GAP_SMALL};
+  flex-shrink: 0;
+
+  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
+    margin-bottom: 4px;
+  }
+
+  @media (max-height: 800px) {
+    margin-bottom: 2px;
+  }
 `;
 
 const GameBoard = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${UI_CONFIG.GAP_MEDIUM};
+  gap: ${UI_CONFIG.GAP_SMALL};
+  flex: 1;
+  justify-content: center;
+
+  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
+    gap: 4px;
+  }
+
+  @media (max-height: 800px) {
+    gap: 2px;
+  }
 `;
 
 const GameInfo = styled.div`
@@ -36,7 +70,7 @@ const GameInfo = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: ${GAME_CONFIG.MAX_WIDTH}px;
+  max-width: min(85vw, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
   padding: ${UI_CONFIG.GAP_MEDIUM};
   background-color: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.borderRadius.lg};

@@ -30,7 +30,7 @@ export const useDragAndDrop = () => {
       if (
         draggedPiece &&
         validDropPositions.some(
-          p => p.row === position.row && p.col === position.col
+          (p) => p.row === position.row && p.col === position.col
         )
       ) {
         // Valid drop - this will trigger move validation and execution

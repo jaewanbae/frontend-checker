@@ -11,7 +11,7 @@ const SquareContainer = styled.div<{
   aspect-ratio: 1;
   background-color: ${({ isLight, theme }) =>
     isLight ? theme.colors.lightSquare : theme.colors.darkSquare};
-  border: ${UI_CONFIG.SQUARE_BORDER_WIDTH}px solid rgba(0, 0, 0, 0.1);
+  border: ${UI_CONFIG.SQUARE_BORDER_WIDTH}px solid #e0e0e0;
 
   display: flex;
   align-items: center;
