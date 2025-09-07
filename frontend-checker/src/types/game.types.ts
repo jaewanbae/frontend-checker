@@ -33,6 +33,8 @@ export interface Move {
   isKinging: boolean;
   isCapture: boolean;
   isMultipleJump: boolean;
+  timestamp?: number;
+  moveNumber?: number;
 }
 
 export interface MoveSequence {
@@ -134,7 +136,8 @@ export type GameAction =
   | { type: 'RESUME_GAME' }
   | { type: 'UPDATE_STATS'; stats: Partial<GameStats> }
   | { type: 'HIGHLIGHT_MOVES'; positions: Position[] }
-  | { type: 'CLEAR_HIGHLIGHTS' };
+  | { type: 'CLEAR_HIGHLIGHTS' }
+  | { type: 'LOAD_SAVED_GAME'; savedState: Partial<GameState> };
 
 // Component props types
 export interface BoardProps {
@@ -199,6 +202,7 @@ export type ValidationResult = {
   capturedPiece?: Piece;
   isKinging?: boolean;
   isCapture?: boolean;
+  isMultipleJump?: boolean;
 };
 
 // Theme types (extending styled-components theme)

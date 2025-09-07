@@ -1,4 +1,4 @@
-import { useState, useCallback, useReducer } from 'react';
+import { useState, useCallback, useReducer, useEffect } from 'react';
 import {
   GameState,
   GameAction,
@@ -18,48 +18,125 @@ import {
   GameStatus,
   GameResult,
 } from '../constants/gameEnums';
+import { initializeBoard } from '../utils/gameLogic';
+import {
+  createGameRulesEngine,
+  isLegalMove,
+  getGameStatusMessage,
+  isGameOver,
+  isPlayerTurn,
+} from '../utils/gameRules';
+
+// Game state persistence keys
+const GAME_STATE_KEY = 'checkers-game-state';
+const GAME_STATS_KEY = 'checkers-game-stats';
+
+// Save game state to localStorage
+const saveGameState = (gameState: GameState): void => {
+  try {
+    const stateToSave = {
+      board: gameState.board,
+      currentPlayer: gameState.currentPlayer,
+      players: gameState.players,
+      gameMode: gameState.gameMode,
+      gameStatus: gameState.gameStatus,
+      gameResult: gameState.gameResult,
+      moveHistory: gameState.moveHistory,
+      selectedPiece: gameState.selectedPiece,
+      validMoves: gameState.validMoves,
+      highlightedSquares: gameState.highlightedSquares,
+    };
+    localStorage.setItem(GAME_STATE_KEY, JSON.stringify(stateToSave));
+  } catch (error) {
+    console.warn('Failed to save game state:', error);
+  }
+};
+
+// Load game state from localStorage
+const loadGameState = (): Partial<GameState> | null => {
+  try {
+    const savedState = localStorage.getItem(GAME_STATE_KEY);
+    if (savedState) {
+      return JSON.parse(savedState);
+    }
+  } catch (error) {
+    console.warn('Failed to load game state:', error);
+  }
+  return null;
+};
+
+// Save game statistics to localStorage
+const saveGameStats = (stats: GameState['stats']): void => {
+  try {
+    localStorage.setItem(GAME_STATS_KEY, JSON.stringify(stats));
+  } catch (error) {
+    console.warn('Failed to save game stats:', error);
+  }
+};
+
+// Load game statistics from localStorage
+const loadGameStats = (): GameState['stats'] | null => {
+  try {
+    const savedStats = localStorage.getItem(GAME_STATS_KEY);
+    if (savedStats) {
+      return JSON.parse(savedStats);
+    }
+  } catch (error) {
+    console.warn('Failed to load game stats:', error);
+  }
+  return null;
+};
+
+// Clear saved game state
+const clearSavedGameState = (): void => {
+  try {
+    localStorage.removeItem(GAME_STATE_KEY);
+    localStorage.removeItem(GAME_STATS_KEY);
+  } catch (error) {
+    console.warn('Failed to clear saved game state:', error);
+  }
+};
 
 // Initial game state
-const createInitialGameState = (): GameState => ({
-  board: {
-    squares: Array(GAME_CONFIG.BOARD_SIZE)
-      .fill(null)
-      .map(() => Array(GAME_CONFIG.BOARD_SIZE).fill(null)),
-    size: GAME_CONFIG.BOARD_SIZE,
-  },
-  currentPlayer: PieceColor.LIGHT,
-  players: {
-    light: {
-      color: PieceColor.LIGHT,
-      isAI: false,
-      piecesRemaining: GAME_CONFIG.PIECES_PER_PLAYER,
-      captures: GAME_STATE.INITIAL_CAPTURES,
-      isActive: true,
+const createInitialGameState = (): GameState => {
+  const savedStats = loadGameStats();
+
+  return {
+    board: initializeBoard(),
+    currentPlayer: PieceColor.LIGHT,
+    players: {
+      light: {
+        color: PieceColor.LIGHT,
+        isAI: false,
+        piecesRemaining: GAME_CONFIG.PIECES_PER_PLAYER,
+        captures: GAME_STATE.INITIAL_CAPTURES,
+        isActive: true,
+      },
+      dark: {
+        color: PieceColor.DARK,
+        isAI: false,
+        piecesRemaining: GAME_CONFIG.PIECES_PER_PLAYER,
+        captures: GAME_STATE.INITIAL_CAPTURES,
+        isActive: false,
+      },
     },
-    dark: {
-      color: PieceColor.DARK,
-      isAI: false,
-      piecesRemaining: GAME_CONFIG.PIECES_PER_PLAYER,
-      captures: GAME_STATE.INITIAL_CAPTURES,
-      isActive: false,
+    gameMode: GameMode.HUMAN_VS_HUMAN,
+    gameStatus: GameStatus.WAITING,
+    gameResult: GameResult.NONE,
+    stats: savedStats || {
+      moveCount: GAME_STATE.INITIAL_MOVE_COUNT,
+      gameTime: GAME_STATE.INITIAL_GAME_TIME,
+      captures: {
+        light: GAME_STATE.INITIAL_CAPTURES,
+        dark: GAME_STATE.INITIAL_CAPTURES,
+      },
     },
-  },
-  gameMode: GameMode.HUMAN_VS_HUMAN,
-  gameStatus: GameStatus.WAITING,
-  gameResult: GameResult.NONE,
-  stats: {
-    moveCount: GAME_STATE.INITIAL_MOVE_COUNT,
-    gameTime: GAME_STATE.INITIAL_GAME_TIME,
-    captures: {
-      light: GAME_STATE.INITIAL_CAPTURES,
-      dark: GAME_STATE.INITIAL_CAPTURES,
-    },
-  },
-  moveHistory: [],
-  selectedPiece: null,
-  validMoves: [],
-  highlightedSquares: [],
-});
+    moveHistory: [],
+    selectedPiece: null,
+    validMoves: [],
+    highlightedSquares: [],
+  };
+};
 
 // Game state reducer
 const gameStateReducer = (state: GameState, action: GameAction): GameState => {
@@ -168,6 +245,12 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
         highlightedSquares: [],
       };
 
+    case 'LOAD_SAVED_GAME':
+      return {
+        ...state,
+        ...action.savedState,
+      };
+
     default:
       return state;
   }
@@ -181,6 +264,23 @@ export const useGameState = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Load saved game state on component mount
+  useEffect(() => {
+    const savedState = loadGameState();
+    if (savedState && savedState.gameStatus === GameStatus.PLAYING) {
+      // Restore the saved game state
+      dispatch({ type: 'LOAD_SAVED_GAME', savedState });
+    }
+  }, []);
+
+  // Save game state whenever it changes (except for temporary states)
+  useEffect(() => {
+    if (gameState.gameStatus === GameStatus.PLAYING) {
+      saveGameState(gameState);
+    }
+    saveGameStats(gameState.stats);
+  }, [gameState]);
+
   const selectPiece = useCallback((piece: Piece) => {
     try {
       dispatch({ type: 'SELECT_PIECE', piece });
@@ -193,17 +293,47 @@ export const useGameState = () => {
     dispatch({ type: 'DESELECT_PIECE' });
   }, []);
 
-  const makeMove = useCallback((move: Move) => {
-    try {
-      setIsLoading(true);
-      dispatch({ type: 'MAKE_MOVE', move });
-      dispatch({ type: 'CHANGE_TURN' });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to make move');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const makeMove = useCallback(
+    (move: Move) => {
+      try {
+        setIsLoading(true);
+
+        // Create game rules engine with current state
+        const engine = createGameRulesEngine(gameState);
+
+        // Check if move is legal
+        if (!isLegalMove(gameState, move)) {
+          setError('Invalid move');
+          return;
+        }
+
+        // Execute the move
+        const moveExecuted = engine.executeMove(move);
+
+        if (moveExecuted) {
+          // Update game state with new state from engine
+          const newGameState = engine.getGameState();
+
+          // Dispatch the move action
+          dispatch({ type: 'MAKE_MOVE', move });
+
+          // Check if game is over
+          if (isGameOver(newGameState)) {
+            dispatch({ type: 'END_GAME', result: newGameState.gameResult });
+          } else {
+            dispatch({ type: 'CHANGE_TURN' });
+          }
+        } else {
+          setError('Failed to execute move');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to make move');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [gameState]
+  );
 
   const startGame = useCallback((mode: GameMode) => {
     try {
@@ -234,6 +364,64 @@ export const useGameState = () => {
     dispatch({ type: 'CLEAR_HIGHLIGHTS' });
   }, []);
 
+  const saveGame = useCallback(() => {
+    try {
+      saveGameState(gameState);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save game');
+    }
+  }, [gameState]);
+
+  const loadGame = useCallback(() => {
+    try {
+      const savedState = loadGameState();
+      if (savedState) {
+        dispatch({ type: 'LOAD_SAVED_GAME', savedState });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load game');
+    }
+  }, []);
+
+  const clearSavedGame = useCallback(() => {
+    try {
+      clearSavedGameState();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to clear saved game'
+      );
+    }
+  }, []);
+
+  // Game rules utilities
+  const getCurrentPlayer = useCallback(() => {
+    return gameState.currentPlayer;
+  }, [gameState.currentPlayer]);
+
+  const getGameStatusMessageUtil = useCallback(() => {
+    return getGameStatusMessage(gameState);
+  }, [gameState]);
+
+  const isGameFinished = useCallback(() => {
+    return isGameOver(gameState);
+  }, [gameState]);
+
+  const isCurrentPlayerTurn = useCallback(
+    (playerColor: PieceColor) => {
+      return isPlayerTurn(gameState, playerColor);
+    },
+    [gameState]
+  );
+
+  const getValidMovesForCurrentPlayer = useCallback(() => {
+    const engine = createGameRulesEngine(gameState);
+    return engine.getValidMovesForCurrentPlayer();
+  }, [gameState]);
+
+  const getMoveHistory = useCallback(() => {
+    return gameState.moveHistory;
+  }, [gameState.moveHistory]);
+
   return {
     gameState,
     actions: {
@@ -246,6 +434,17 @@ export const useGameState = () => {
       resumeGame,
       highlightMoves,
       clearHighlights,
+      saveGame,
+      loadGame,
+      clearSavedGame,
+    },
+    gameRules: {
+      getCurrentPlayer,
+      getGameStatusMessage: getGameStatusMessageUtil,
+      isGameFinished,
+      isCurrentPlayerTurn,
+      getValidMovesForCurrentPlayer,
+      getMoveHistory,
     },
     isLoading,
     error,

@@ -19,7 +19,6 @@ const BoardWithLabels = styled.div`
   min-height: ${GAME_CONFIG.MIN_BOARD_SIZE + 100}px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.lg};
   background-color: ${({ theme }) => theme.colors.background};
   padding: 12px;
   gap: 6px;

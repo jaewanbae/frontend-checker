@@ -84,25 +84,25 @@ src/
 ### 2.1 Game State Management
 
 - [x] Implement game state using React hooks (useReducer, useState)
-- [ ] Create game logic utilities (separate from UI components)
-- [ ] Implement board initialization with standard starting positions
-- [ ] Set up game state persistence (localStorage)
+- [x] Create game logic utilities (separate from UI components)
+- [x] Implement board initialization with standard starting positions
+- [x] Set up game state persistence (localStorage)
 
 ### 2.2 Move Validation System
 
-- [ ] Basic diagonal movement validation
-- [ ] Jump/capture logic with mandatory capture enforcement
-- [ ] Multiple sequential jumps support
-- [ ] King movement (forward and backward)
-- [ ] Kinging logic when reaching opponent's back row
-- [ ] Valid move highlighting system
+- [x] Basic diagonal movement validation
+- [x] Jump/capture logic with mandatory capture enforcement
+- [x] Multiple sequential jumps support
+- [x] King movement (forward and backward)
+- [x] Kinging logic when reaching opponent's back row
+- [x] Valid move highlighting system
 
 ### 2.3 Game Rules Engine
 
-- [ ] Turn management (alternating players)
-- [ ] Win condition detection
-- [ ] Move history tracking
-- [ ] Game state transitions
+- [x] Turn management (alternating players)
+- [x] Win condition detection
+- [x] Move history tracking
+- [x] Game state transitions
 
 ---
 
