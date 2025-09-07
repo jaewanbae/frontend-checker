@@ -101,9 +101,9 @@ const minimax = (
 
   const currentColor = isMaximizing
     ? playerColor
-    : playerColor === 'light'
-      ? 'dark'
-      : 'light';
+    : playerColor === PieceColor.LIGHT
+      ? PieceColor.DARK
+      : PieceColor.LIGHT;
   const validMoves = getValidMovesForPlayer(board, currentColor);
 
   if (validMoves.length === 0) {

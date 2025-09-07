@@ -188,11 +188,11 @@ export const hasValidMoves = (board: Board, color: PieceColor): boolean => {
 
 // Check if the game is over
 export const checkGameOver = (board: Board): PieceColor | null => {
-  const lightHasMoves = hasValidMoves(board, 'light');
-  const darkHasMoves = hasValidMoves(board, 'dark');
+  const lightHasMoves = hasValidMoves(board, PieceColor.LIGHT);
+  const darkHasMoves = hasValidMoves(board, PieceColor.DARK);
 
-  if (!lightHasMoves) return 'dark';
-  if (!darkHasMoves) return 'light';
+  if (!lightHasMoves) return PieceColor.DARK;
+  if (!darkHasMoves) return PieceColor.LIGHT;
 
   return null;
 };

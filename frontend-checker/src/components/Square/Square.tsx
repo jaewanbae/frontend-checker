@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { UI_CONFIG } from '../../constants/gameConstants';
 
 const SquareContainer = styled.div<{
   isLight: boolean;
@@ -10,7 +11,7 @@ const SquareContainer = styled.div<{
   aspect-ratio: 1;
   background-color: ${({ isLight, theme }) =>
     isLight ? theme.colors.lightSquare : theme.colors.darkSquare};
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: ${UI_CONFIG.SQUARE_BORDER_WIDTH}px solid rgba(0, 0, 0, 0.1);
 
   display: flex;
   align-items: center;
@@ -45,7 +46,7 @@ const SquareContainer = styled.div<{
       isValidMove &&
       `
       background-color: ${theme.colors.validMove};
-      transform: scale(1.05);
+      transform: scale(${UI_CONFIG.HOVER_SCALE});
     `}
   }
 

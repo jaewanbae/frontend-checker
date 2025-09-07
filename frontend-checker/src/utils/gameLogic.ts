@@ -1,19 +1,30 @@
 import { Board, Piece, Position, PieceColor } from '../types/game.types';
+import {
+  GAME_CONFIG,
+  BOARD_LAYOUT,
+  GAME_RULES,
+  MOVEMENT,
+} from '../constants/gameConstants';
+import { PieceType } from '../constants/gameEnums';
 
 // Initialize the board with pieces in starting positions
 export const initializeBoard = (): Board => {
-  const squares: (Piece | null)[][] = Array(8)
+  const squares: (Piece | null)[][] = Array(GAME_CONFIG.BOARD_SIZE)
     .fill(null)
-    .map(() => Array(8).fill(null));
+    .map(() => Array(GAME_CONFIG.BOARD_SIZE).fill(null));
 
   // Place light pieces (top 3 rows)
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 8; col++) {
-      if ((row + col) % 2 === 1) {
+  for (
+    let row = BOARD_LAYOUT.LIGHT_PIECE_START_ROW;
+    row <= BOARD_LAYOUT.LIGHT_PIECE_END_ROW;
+    row++
+  ) {
+    for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
+      if ((row + col) % 2 === BOARD_LAYOUT.DARK_SQUARE_PATTERN) {
         squares[row][col] = {
           id: `light-${row}-${col}`,
-          color: 'light',
-          type: 'pawn',
+          color: PieceColor.LIGHT,
+          type: PieceType.PAWN,
           position: { row, col },
           isKing: false,
         };
@@ -22,13 +33,17 @@ export const initializeBoard = (): Board => {
   }
 
   // Place dark pieces (bottom 3 rows)
-  for (let row = 5; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      if ((row + col) % 2 === 1) {
+  for (
+    let row = BOARD_LAYOUT.DARK_PIECE_START_ROW;
+    row <= BOARD_LAYOUT.DARK_PIECE_END_ROW;
+    row++
+  ) {
+    for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
+      if ((row + col) % 2 === BOARD_LAYOUT.DARK_SQUARE_PATTERN) {
         squares[row][col] = {
           id: `dark-${row}-${col}`,
-          color: 'dark',
-          type: 'pawn',
+          color: PieceColor.DARK,
+          type: PieceType.PAWN,
           position: { row, col },
           isKing: false,
         };
@@ -38,7 +53,7 @@ export const initializeBoard = (): Board => {
 
   return {
     squares,
-    size: 8,
+    size: GAME_CONFIG.BOARD_SIZE,
   };
 };
 
@@ -66,7 +81,7 @@ export const countPiecesByColor = (board: Board, color: PieceColor): number => {
 // Check if a position is on the board
 export const isOnBoard = (
   position: Position,
-  boardSize: number = 8
+  boardSize: number = GAME_CONFIG.BOARD_SIZE
 ): boolean => {
   return (
     position.row >= 0 &&
@@ -78,7 +93,9 @@ export const isOnBoard = (
 
 // Check if a square is light or dark
 export const isLightSquare = (position: Position): boolean => {
-  return (position.row + position.col) % 2 === 0;
+  return (
+    (position.row + position.col) % 2 === BOARD_LAYOUT.LIGHT_SQUARE_PATTERN
+  );
 };
 
 // Get the piece at a specific position
@@ -141,16 +158,16 @@ export const canPromoteToKing = (
 ): boolean => {
   if (piece.isKing) return false;
 
-  return piece.color === 'light'
-    ? newPosition.row === 0
-    : newPosition.row === 7;
+  return piece.color === PieceColor.LIGHT
+    ? newPosition.row === BOARD_LAYOUT.KING_ROW_LIGHT
+    : newPosition.row === BOARD_LAYOUT.KING_ROW_DARK;
 };
 
 // Promote a piece to king
 export const promoteToKing = (piece: Piece): Piece => {
   return {
     ...piece,
-    type: 'king',
+    type: PieceType.KING,
     isKing: true,
   };
 };
@@ -159,23 +176,12 @@ export const promoteToKing = (piece: Piece): Piece => {
 export const getDiagonalDirections = (piece: Piece): Position[] => {
   if (piece.isKing) {
     // Kings can move in all diagonal directions
-    return [
-      { row: -1, col: -1 },
-      { row: -1, col: 1 },
-      { row: 1, col: -1 },
-      { row: 1, col: 1 },
-    ];
+    return MOVEMENT.DIAGONAL_DIRECTIONS;
   } else {
     // Regular pieces can only move forward
-    return piece.color === 'light'
-      ? [
-          { row: -1, col: -1 },
-          { row: -1, col: 1 },
-        ]
-      : [
-          { row: 1, col: -1 },
-          { row: 1, col: 1 },
-        ];
+    return piece.color === PieceColor.LIGHT
+      ? MOVEMENT.LIGHT_PIECE_DIRECTIONS
+      : MOVEMENT.DARK_PIECE_DIRECTIONS;
   }
 };
 
@@ -199,7 +205,7 @@ export const getMiddlePosition = (from: Position, to: Position): Position => {
 
 // Check if a move is a capture move
 export const isCaptureMove = (from: Position, to: Position): boolean => {
-  return getDistance(from, to) === 2;
+  return getDistance(from, to) === GAME_RULES.CAPTURE_DISTANCE;
 };
 
 // Get all pieces that can capture
@@ -212,8 +218,8 @@ export const getPiecesThatCanCapture = (
     const directions = getDiagonalDirections(piece);
     return directions.some(direction => {
       const capturePosition: Position = {
-        row: piece.position.row + direction.row * 2,
-        col: piece.position.col + direction.col * 2,
+        row: piece.position.row + direction.row * GAME_RULES.CAPTURE_DISTANCE,
+        col: piece.position.col + direction.col * GAME_RULES.CAPTURE_DISTANCE,
       };
 
       if (!isOnBoard(capturePosition)) return false;

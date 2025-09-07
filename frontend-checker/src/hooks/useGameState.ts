@@ -7,39 +7,53 @@ import {
   Move,
   Position,
 } from '../types/game.types';
+import {
+  GAME_CONFIG,
+  GAME_STATE,
+  ERROR_MESSAGES,
+} from '../constants/gameConstants';
+import {
+  GameActionType,
+  PieceColor,
+  GameStatus,
+  GameResult,
+} from '../constants/gameEnums';
 
 // Initial game state
 const createInitialGameState = (): GameState => ({
   board: {
-    squares: Array(8)
+    squares: Array(GAME_CONFIG.BOARD_SIZE)
       .fill(null)
-      .map(() => Array(8).fill(null)),
-    size: 8,
+      .map(() => Array(GAME_CONFIG.BOARD_SIZE).fill(null)),
+    size: GAME_CONFIG.BOARD_SIZE,
   },
-  currentPlayer: 'light',
+  currentPlayer: PieceColor.LIGHT,
   players: {
     light: {
-      color: 'light',
+      color: PieceColor.LIGHT,
       isAI: false,
-      piecesRemaining: 12,
-      captures: 0,
+      piecesRemaining: GAME_CONFIG.PIECES_PER_PLAYER,
+      captures: GAME_STATE.INITIAL_CAPTURES,
       isActive: true,
     },
     dark: {
-      color: 'dark',
+      color: PieceColor.DARK,
       isAI: false,
-      piecesRemaining: 12,
-      captures: 0,
+      piecesRemaining: GAME_CONFIG.PIECES_PER_PLAYER,
+      captures: GAME_STATE.INITIAL_CAPTURES,
       isActive: false,
     },
   },
-  gameMode: 'human-vs-human',
-  gameStatus: 'waiting',
-  gameResult: null,
+  gameMode: GameMode.HUMAN_VS_HUMAN,
+  gameStatus: GameStatus.WAITING,
+  gameResult: GameResult.NONE,
   stats: {
-    moveCount: 0,
-    gameTime: 0,
-    captures: { light: 0, dark: 0 },
+    moveCount: GAME_STATE.INITIAL_MOVE_COUNT,
+    gameTime: GAME_STATE.INITIAL_GAME_TIME,
+    captures: {
+      light: GAME_STATE.INITIAL_CAPTURES,
+      dark: GAME_STATE.INITIAL_CAPTURES,
+    },
   },
   moveHistory: [],
   selectedPiece: null,
@@ -85,7 +99,7 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
       return {
         ...state,
         gameMode: action.mode,
-        gameStatus: 'playing',
+        gameStatus: GameStatus.PLAYING,
         players: {
           ...state.players,
           dark: {
@@ -98,22 +112,25 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
     case 'END_GAME':
       return {
         ...state,
-        gameStatus: 'finished',
+        gameStatus: GameStatus.FINISHED,
         gameResult: action.result,
       };
 
     case 'CHANGE_TURN':
       return {
         ...state,
-        currentPlayer: state.currentPlayer === 'light' ? 'dark' : 'light',
+        currentPlayer:
+          state.currentPlayer === PieceColor.LIGHT
+            ? PieceColor.DARK
+            : PieceColor.LIGHT,
         players: {
           light: {
             ...state.players.light,
-            isActive: state.currentPlayer === 'dark',
+            isActive: state.currentPlayer === PieceColor.DARK,
           },
           dark: {
             ...state.players.dark,
-            isActive: state.currentPlayer === 'light',
+            isActive: state.currentPlayer === PieceColor.LIGHT,
           },
         },
       };
@@ -124,13 +141,13 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
     case 'PAUSE_GAME':
       return {
         ...state,
-        gameStatus: 'paused',
+        gameStatus: GameStatus.PAUSED,
       };
 
     case 'RESUME_GAME':
       return {
         ...state,
-        gameStatus: 'playing',
+        gameStatus: GameStatus.PLAYING,
       };
 
     case 'UPDATE_STATS':

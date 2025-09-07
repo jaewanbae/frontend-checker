@@ -1,11 +1,13 @@
-// Game piece types
-export type PieceColor = 'light' | 'dark';
-export type PieceType = 'pawn' | 'king';
+import {
+  PieceColor,
+  PieceType,
+  GameMode,
+  GameStatus,
+  GameResult,
+} from '../constants/gameEnums';
 
-// Game state types
-export type GameMode = 'human-vs-human' | 'human-vs-ai';
-export type GameStatus = 'waiting' | 'playing' | 'paused' | 'finished';
-export type GameResult = 'light-wins' | 'dark-wins' | 'draw' | null;
+// Re-export enums as types for backward compatibility
+export { PieceColor, PieceType, GameMode, GameStatus, GameResult };
 
 // Board position
 export interface Position {

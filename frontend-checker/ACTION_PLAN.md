@@ -49,6 +49,9 @@ src/
 │   └── ai.ts
 ├── types/
 │   └── game.types.ts
+├── constants/
+│   ├── gameConstants.ts
+│   └── gameEnums.ts
 ├── tests/
 │   ├── components/
 │   ├── utils/
@@ -80,7 +83,7 @@ src/
 
 ### 2.1 Game State Management
 
-- [ ] Implement game state using React Context or Zustand
+- [x] Implement game state using React hooks (useReducer, useState)
 - [ ] Create game logic utilities (separate from UI components)
 - [ ] Implement board initialization with standard starting positions
 - [ ] Set up game state persistence (localStorage)
@@ -280,7 +283,7 @@ src/
 - **Pragmatic Drag and Drop** (`@dnd-kit/core`, `@dnd-kit/utilities`)
 - **Styled Components** for styling and theming
 - **Jest** + **React Testing Library** for testing
-- **React Context** or **Zustand** for state management
+- **React Hooks** (useReducer, useState) for state management
 - **ESLint** + **Prettier** for code quality
 
 ---
@@ -344,8 +347,8 @@ npm install @dnd-kit/core @dnd-kit/utilities
 # Install Styled Components
 npm install styled-components @types/styled-components
 
-# Install additional dependencies
-npm install zustand date-fns
+# Install additional dependencies (if needed)
+# npm install [additional packages as needed]
 
 # Install dev dependencies
 npm install --save-dev @types/node

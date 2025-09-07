@@ -2,27 +2,33 @@ import React from 'react';
 import styled from 'styled-components';
 import { Board } from '../Board/Board';
 import { Square } from '../Square/Square';
+import {
+  GAME_CONFIG,
+  UI_CONFIG,
+  TEXT,
+  CONSOLE_MESSAGES,
+} from '../../constants/gameConstants';
 
 const GameContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.lg};
-  padding: ${({ theme }) => theme.spacing.lg};
-  min-height: 100vh;
+  gap: ${UI_CONFIG.GAP_LARGE};
+  padding: ${UI_CONFIG.GAP_LARGE};
+  min-height: ${UI_CONFIG.MIN_HEIGHT};
   background-color: ${({ theme }) => theme.colors.background};
 `;
 
 const GameHeader = styled.div`
   text-align: center;
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${UI_CONFIG.GAP_MEDIUM};
 `;
 
 const GameBoard = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${UI_CONFIG.GAP_MEDIUM};
 `;
 
 const GameInfo = styled.div`
@@ -30,15 +36,15 @@ const GameInfo = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 600px;
-  padding: ${({ theme }) => theme.spacing.md};
+  max-width: ${GAME_CONFIG.MAX_WIDTH}px;
+  padding: ${UI_CONFIG.GAP_MEDIUM};
   background-color: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 const PlayerInfo = styled.div<{ isActive: boolean }>`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  padding: ${UI_CONFIG.GAP_SMALL} ${UI_CONFIG.GAP_MEDIUM};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   background-color: ${({ isActive, theme }) =>
     isActive ? theme.colors.selected : 'transparent'};
@@ -54,8 +60,8 @@ export const GameController: React.FC<GameControllerProps> = ({ children }) => {
   // Temporary placeholder implementation
   const renderBoard = () => {
     const squares = [];
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
+    for (let row = 0; row < GAME_CONFIG.BOARD_SIZE; row++) {
+      for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
         const isLight = (row + col) % 2 === 0;
         squares.push(
           <Square
@@ -63,32 +69,38 @@ export const GameController: React.FC<GameControllerProps> = ({ children }) => {
             row={row}
             col={col}
             isLight={isLight}
-            onClick={() => console.log(`Clicked square ${row},${col}`)}
+            onClick={() =>
+              console.log(CONSOLE_MESSAGES.CLICKED_SQUARE(row, col))
+            }
           />
         );
       }
     }
-    console.log(`Rendered ${squares.length} squares`);
+    console.log(CONSOLE_MESSAGES.RENDERED_SQUARES(squares.length));
     return squares;
   };
 
   return (
     <GameContainer>
       <GameHeader>
-        <h1>Checkers Game</h1>
-        <p>Click and drag pieces to move them</p>
+        <h1>{TEXT.GAME_TITLE}</h1>
+        <p>{TEXT.GAME_INSTRUCTIONS}</p>
       </GameHeader>
 
       <GameBoard>
         <GameInfo>
           <PlayerInfo isActive={true}>
-            <strong>Player 1 (Light)</strong>
-            <div>Pieces: 12</div>
+            <strong>{TEXT.PLAYER_1_LABEL}</strong>
+            <div>
+              {TEXT.PIECES_LABEL} {GAME_CONFIG.PIECES_PER_PLAYER}
+            </div>
           </PlayerInfo>
-          <div>VS</div>
+          <div>{TEXT.VS_LABEL}</div>
           <PlayerInfo isActive={false}>
-            <strong>Player 2 (Dark)</strong>
-            <div>Pieces: 12</div>
+            <strong>{TEXT.PLAYER_2_LABEL}</strong>
+            <div>
+              {TEXT.PIECES_LABEL} {GAME_CONFIG.PIECES_PER_PLAYER}
+            </div>
           </PlayerInfo>
         </GameInfo>
 

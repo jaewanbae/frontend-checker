@@ -3,7 +3,7 @@ import {
   getPiecesByColor,
   countPiecesByColor,
 } from '../../utils/gameLogic';
-import { Board } from '../../types/game.types';
+import { Board, PieceColor } from '../../types/game.types';
 
 describe('Game Logic Utils', () => {
   let board: Board;
@@ -13,16 +13,16 @@ describe('Game Logic Utils', () => {
   });
 
   test('should initialize board with correct number of pieces', () => {
-    const lightPieces = getPiecesByColor(board, 'light');
-    const darkPieces = getPiecesByColor(board, 'dark');
+    const lightPieces = getPiecesByColor(board, PieceColor.LIGHT);
+    const darkPieces = getPiecesByColor(board, PieceColor.DARK);
 
     expect(lightPieces).toHaveLength(12);
     expect(darkPieces).toHaveLength(12);
   });
 
   test('should count pieces correctly', () => {
-    const lightCount = countPiecesByColor(board, 'light');
-    const darkCount = countPiecesByColor(board, 'dark');
+    const lightCount = countPiecesByColor(board, PieceColor.LIGHT);
+    const darkCount = countPiecesByColor(board, PieceColor.DARK);
 
     expect(lightCount).toBe(12);
     expect(darkCount).toBe(12);
