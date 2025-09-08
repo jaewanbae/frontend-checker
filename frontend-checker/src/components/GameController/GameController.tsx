@@ -8,6 +8,7 @@ import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 import { PieceColor, Move } from '../../types/game.types';
 import { GameStatus, GameMode } from '../../constants/gameEnums';
 import { GAME_CONFIG, UI_CONFIG, TEXT } from '../../constants/gameConstants';
+import { validateMove } from '../../utils/moveValidation';
 
 const GameContainer = styled.div`
   display: flex;
@@ -134,16 +135,28 @@ export const GameController: React.FC<GameControllerProps> = () => {
               if (piece && piece.color === gameState.currentPlayer) {
                 actions.selectPiece(piece);
               } else if (isValidMove && gameState.selectedPiece) {
-                // Handle move execution - create move object
-                const move: Move = {
-                  from: gameState.selectedPiece.position,
-                  to: { row, col },
-                  piece: gameState.selectedPiece,
-                  isKinging: false, // Will be determined by game logic
-                  isCapture: false, // Will be determined by game logic
-                  isMultipleJump: false, // Will be determined by game logic
-                };
-                actions.makeMove(move);
+                // Validate the move to get capture information
+                const validation = validateMove(
+                  gameState.board,
+                  gameState.selectedPiece,
+                  gameState.selectedPiece.position,
+                  { row, col }
+                );
+
+                if (validation.isValid) {
+                  // Create move object with proper capture information
+                  // Note: isMultipleJump will be determined during execution
+                  const move: Move = {
+                    from: gameState.selectedPiece.position,
+                    to: { row, col },
+                    piece: gameState.selectedPiece,
+                    capturedPiece: validation.capturedPiece,
+                    isKinging: validation.isKinging || false,
+                    isCapture: validation.isCapture || false,
+                    isMultipleJump: false, // Will be determined during execution
+                  };
+                  actions.makeMove(move);
+                }
               }
             }}
             onDrop={position => {
@@ -152,16 +165,28 @@ export const GameController: React.FC<GameControllerProps> = () => {
               }
 
               if (gameState.selectedPiece) {
-                // Create move object for drop
-                const move: Move = {
-                  from: gameState.selectedPiece.position,
-                  to: position,
-                  piece: gameState.selectedPiece,
-                  isKinging: false, // Will be determined by game logic
-                  isCapture: false, // Will be determined by game logic
-                  isMultipleJump: false, // Will be determined by game logic
-                };
-                actions.makeMove(move);
+                // Validate the move to get capture information
+                const validation = validateMove(
+                  gameState.board,
+                  gameState.selectedPiece,
+                  gameState.selectedPiece.position,
+                  position
+                );
+
+                if (validation.isValid) {
+                  // Create move object with proper capture information
+                  // Note: isMultipleJump will be determined during execution
+                  const move: Move = {
+                    from: gameState.selectedPiece.position,
+                    to: position,
+                    piece: gameState.selectedPiece,
+                    capturedPiece: validation.capturedPiece,
+                    isKinging: validation.isKinging || false,
+                    isCapture: validation.isCapture || false,
+                    isMultipleJump: false, // Will be determined during execution
+                  };
+                  actions.makeMove(move);
+                }
               }
             }}
           >

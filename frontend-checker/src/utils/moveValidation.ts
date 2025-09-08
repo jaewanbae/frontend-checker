@@ -107,8 +107,6 @@ export const getValidMovesForPiece = (
 ): Position[] => {
   const validMoves: Position[] = [];
   const directions = getDiagonalDirections(piece);
-  console.log(piece, 'PETERBAE');
-  console.log(directions, 'PETERBAE directions');
   // Check if player must capture
   const mustCapturePieces = getPiecesThatCanCapture(board, piece.color);
   const canThisPieceCapture = mustCapturePieces.some(p => p.id === piece.id);
@@ -185,25 +183,36 @@ export const getValidMovesForPlayer = (
 
         // Get multiple jump sequences
         const jumpSequences = findJumpSequences(board, piece, piece.position);
+
         for (const sequence of jumpSequences) {
           if (sequence.length > 0) {
             const finalPosition = sequence[sequence.length - 1];
-            const validation = validateMove(
+
+            // For multiple jump sequences, we need to validate the first jump
+            // The complete sequence validation will be done during execution
+            const firstJumpValidation = validateMove(
               board,
               piece,
               piece.position,
-              finalPosition
+              sequence[0]
             );
-            if (validation.isValid) {
-              captureMoves.push({
+
+            if (firstJumpValidation.isValid && firstJumpValidation.isCapture) {
+              // Check if this piece can be kinged at the final position
+              const finalPiece = { ...piece, position: finalPosition };
+              const isKinging = canPromoteToKing(finalPiece, finalPosition);
+
+              const move = {
                 from: piece.position,
                 to: finalPosition,
                 piece,
-                capturedPiece: validation.capturedPiece,
-                isKinging: validation.isKinging || false,
+                capturedPiece: firstJumpValidation.capturedPiece, // First captured piece
+                isKinging: isKinging,
                 isCapture: true,
                 isMultipleJump: sequence.length > 1,
-              });
+              };
+
+              captureMoves.push(move);
             }
           }
         }
@@ -291,16 +300,27 @@ export const findJumpSequences = (
           sequences.push([jumpTo]);
         } else {
           // Continue looking for more jumps
+          // Create a simulated board state after this jump
+          const simulatedBoard = { ...board };
+          simulatedBoard.squares = board.squares.map(row => [...row]);
+
+          // Remove the captured piece and move the jumping piece
+          simulatedBoard.squares[middlePosition.row][middlePosition.col] = null;
+          simulatedBoard.squares[from.row][from.col] = null;
+          simulatedBoard.squares[jumpTo.row][jumpTo.col] = newPiece;
+
           const furtherJumps = findJumpSequences(
-            board,
+            simulatedBoard,
             newPiece,
             jumpTo,
             newVisited
           );
+
           if (furtherJumps.length > 0) {
             // Add this jump to the beginning of each further sequence
             furtherJumps.forEach(sequence => {
-              sequences.push([jumpTo, ...sequence]);
+              const fullSequence = [jumpTo, ...sequence];
+              sequences.push(fullSequence);
             });
           } else {
             // No further jumps possible, this is a single jump
@@ -312,43 +332,6 @@ export const findJumpSequences = (
   }
 
   return sequences;
-};
-
-// Check if a move is a multiple jump
-export const isMultipleJump = (
-  board: Board,
-  piece: Piece,
-  to: Position
-): boolean => {
-  const sequences = findJumpSequences(board, piece, piece.position);
-  return sequences.some(
-    sequence =>
-      sequence.length > 1 &&
-      sequence[sequence.length - 1].row === to.row &&
-      sequence[sequence.length - 1].col === to.col
-  );
-};
-
-// Validate a complete move sequence
-export const validateMoveSequence = (
-  board: Board,
-  moves: Move[]
-): ValidationResult => {
-  if (moves.length === 0) {
-    return { isValid: false, reason: 'No moves provided' };
-  }
-
-  // Validate each move in the sequence
-  for (let i = 0; i < moves.length; i++) {
-    const move = moves[i];
-    const validation = validateMove(board, move.piece, move.from, move.to);
-
-    if (!validation.isValid) {
-      return validation;
-    }
-  }
-
-  return { isValid: true };
 };
 
 // Get the best capture move (for AI)
@@ -367,39 +350,4 @@ export const getBestCaptureMove = (
   // For now, return the first capture move
   // This can be enhanced with more sophisticated AI logic
   return captureMoves[0];
-};
-
-// Get valid moves for highlighting (for UI)
-export const getValidMovesForHighlighting = (
-  board: Board,
-  piece: Piece
-): Position[] => {
-  const validMoves: Position[] = [];
-
-  // Get basic moves
-  const basicMoves = getValidMovesForPiece(board, piece);
-  validMoves.push(...basicMoves);
-
-  // Get multiple jump sequences
-  const jumpSequences = findJumpSequences(board, piece, piece.position);
-  for (const sequence of jumpSequences) {
-    if (sequence.length > 0) {
-      const finalPosition = sequence[sequence.length - 1];
-      validMoves.push(finalPosition);
-    }
-  }
-
-  return validMoves;
-};
-
-// Check if a position is a valid move destination for highlighting
-export const isValidMoveDestination = (
-  board: Board,
-  piece: Piece,
-  position: Position
-): boolean => {
-  const validMoves = getValidMovesForHighlighting(board, piece);
-  return validMoves.some(
-    move => move.row === position.row && move.col === position.col
-  );
 };

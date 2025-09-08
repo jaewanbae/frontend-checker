@@ -12,6 +12,7 @@ import {
   hasValidMoves,
   checkGameOver,
   validateMove,
+  findJumpSequences,
 } from './moveValidation';
 import { movePiece, removePiece, promoteToKing, setPieceAt } from './gameLogic';
 import { GAME_CONFIG } from '../constants/gameConstants';
@@ -162,7 +163,7 @@ export class GameRulesEngine {
     };
   }
 
-  // Move Execution
+  // Execute a move (handles both single moves and multiple jumps)
   executeMove(move: Move): boolean {
     // Validate the move
     const validation = validateMove(
@@ -180,21 +181,23 @@ export class GameRulesEngine {
     let newBoard = movePiece(this.gameState.board, move.from, move.to);
 
     // Handle capture
-    if (move.capturedPiece) {
-      newBoard = removePiece(newBoard, move.capturedPiece.position);
+    if (validation.isCapture && validation.capturedPiece) {
+      newBoard = removePiece(newBoard, validation.capturedPiece.position);
 
-      // Update capture count
+      // Update capture counts
       if (move.piece.color === PieceColor.LIGHT) {
         this.gameState.players.light.captures++;
         this.gameState.stats.captures.light++;
+        this.gameState.players.dark.piecesRemaining--;
       } else {
         this.gameState.players.dark.captures++;
         this.gameState.stats.captures.dark++;
+        this.gameState.players.light.piecesRemaining--;
       }
     }
 
     // Handle kinging
-    if (move.isKinging) {
+    if (validation.isKinging) {
       const kingedPiece = promoteToKing(move.piece);
       newBoard = setPieceAt(newBoard, move.to, kingedPiece);
     }
@@ -213,6 +216,21 @@ export class GameRulesEngine {
     if (gameResult !== GameResult.NONE) {
       this.endGame(gameResult);
       return true;
+    }
+
+    // Check if more jumps are available (for multiple jump sequences)
+    if (validation.isCapture && !validation.isKinging) {
+      const currentPiece = { ...move.piece, position: move.to };
+      const furtherJumpSequences = findJumpSequences(
+        this.gameState.board,
+        currentPiece,
+        move.to
+      );
+
+      // If there are more jumps available, don't switch turns
+      if (furtherJumpSequences.length > 0) {
+        return true; // Don't switch turns
+      }
     }
 
     // Switch turns
@@ -263,20 +281,6 @@ export const createGameRulesEngine = (
   gameState: GameState
 ): GameRulesEngine => {
   return new GameRulesEngine(gameState);
-};
-
-// Check if a move is legal for the current game state
-export const isLegalMove = (gameState: GameState, move: Move): boolean => {
-  const engine = new GameRulesEngine(gameState);
-  const validMoves = engine.getValidMovesForCurrentPlayer();
-
-  return validMoves.some(
-    validMove =>
-      validMove.from.row === move.from.row &&
-      validMove.from.col === move.from.col &&
-      validMove.to.row === move.to.row &&
-      validMove.to.col === move.to.col
-  );
 };
 
 // Get game status message

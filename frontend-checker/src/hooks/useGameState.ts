@@ -12,7 +12,6 @@ import { PieceColor, GameStatus, GameResult } from '../constants/gameEnums';
 import { initializeBoard } from '../utils/gameLogic';
 import {
   createGameRulesEngine,
-  isLegalMove,
   getGameStatusMessage,
   isGameOver,
   isPlayerTurn,
@@ -135,7 +134,6 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'SELECT_PIECE':
       const validMoves = getValidMovesForPiece(state.board, action.piece);
-      console.log(validMoves, 'PETERBAE');
       return {
         ...state,
         selectedPiece: action.piece,
@@ -296,12 +294,9 @@ export const useGameState = () => {
         const engine = createGameRulesEngine(gameState);
 
         // Check if move is legal
-        if (!isLegalMove(gameState, move)) {
-          setError('Invalid move');
-          return;
-        }
+        // Move validation is handled by the engine
 
-        // Execute the move
+        // Execute the move (handles both single moves and multiple jump sequences)
         const moveExecuted = engine.executeMove(move);
 
         if (moveExecuted) {
@@ -340,6 +335,8 @@ export const useGameState = () => {
   }, []);
 
   const resetGame = useCallback(() => {
+    // Clear local storage to ensure completely fresh start
+    clearSavedGameState();
     dispatch({ type: 'RESET_GAME' });
     setError(null);
   }, []);
