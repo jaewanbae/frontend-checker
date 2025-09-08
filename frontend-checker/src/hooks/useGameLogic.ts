@@ -7,6 +7,7 @@ import {
   PieceColor,
   ValidationResult,
 } from '../types/game.types';
+import { MOVEMENT } from '../constants/gameConstants';
 
 export const useGameLogic = () => {
   // Check if a position is within board bounds
@@ -110,21 +111,10 @@ export const useGameLogic = () => {
     (board: Board, piece: Piece): Position[] => {
       const validMoves: Position[] = [];
       const directions = piece.isKing
-        ? [
-            { row: -1, col: -1 },
-            { row: -1, col: 1 },
-            { row: 1, col: -1 },
-            { row: 1, col: 1 },
-          ]
+        ? MOVEMENT.DIAGONAL_DIRECTIONS
         : piece.color === 'light'
-          ? [
-              { row: -1, col: -1 },
-              { row: -1, col: 1 },
-            ]
-          : [
-              { row: 1, col: -1 },
-              { row: 1, col: 1 },
-            ];
+          ? MOVEMENT.LIGHT_PIECE_DIRECTIONS
+          : MOVEMENT.DARK_PIECE_DIRECTIONS;
 
       // Check normal moves
       for (const direction of directions) {

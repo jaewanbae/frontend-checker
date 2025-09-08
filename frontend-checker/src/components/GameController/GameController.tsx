@@ -2,12 +2,12 @@ import React from 'react';
 import styled from 'styled-components';
 import { Board } from '../Board/Board';
 import { Square } from '../Square/Square';
-import {
-  GAME_CONFIG,
-  UI_CONFIG,
-  TEXT,
-  CONSOLE_MESSAGES,
-} from '../../constants/gameConstants';
+import { Piece } from '../Piece/Piece';
+import { useGameState } from '../../hooks/useGameState';
+import { useDragAndDrop } from '../../hooks/useDragAndDrop';
+import { PieceColor, Move } from '../../types/game.types';
+import { GameStatus, GameMode } from '../../constants/gameEnums';
+import { GAME_CONFIG, UI_CONFIG, TEXT } from '../../constants/gameConstants';
 
 const GameContainer = styled.div`
   display: flex;
@@ -90,27 +90,118 @@ interface GameControllerProps {
   children?: React.ReactNode;
 }
 
-export const GameController: React.FC<GameControllerProps> = ({ children }) => {
-  // Temporary placeholder implementation
+export const GameController: React.FC<GameControllerProps> = () => {
+  const { gameState, actions, gameRules } = useGameState();
+  const { onDragStart, onDragEnd, isOverValidDropZone } = useDragAndDrop({
+    board: gameState.board,
+    currentPlayer: gameState.currentPlayer,
+    gameStatus: gameState.gameStatus,
+    onPieceSelect: actions.selectPiece,
+  });
+
   const renderBoard = () => {
     const squares = [];
     for (let row = 0; row < GAME_CONFIG.BOARD_SIZE; row++) {
       for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
         const isLight = (row + col) % 2 === 0;
+        const piece = gameState.board.squares[row][col];
+        const isHighlighted = gameState.highlightedSquares.some(
+          pos => pos.row === row && pos.col === col
+        );
+        const isValidMove =
+          gameState.validMoves.some(
+            pos => pos.row === row && pos.col === col
+          ) || isOverValidDropZone({ row, col });
+        const isSelected =
+          gameState.selectedPiece?.position.row === row &&
+          gameState.selectedPiece?.position.col === col;
+
         squares.push(
           <Square
             key={`${row}-${col}`}
             row={row}
             col={col}
             isLight={isLight}
-            onClick={() =>
-              console.log(CONSOLE_MESSAGES.CLICKED_SQUARE(row, col))
-            }
-          />
+            isHighlighted={isHighlighted}
+            isValidMove={isValidMove}
+            isSelected={isSelected}
+            isDropZone={isValidMove}
+            onClick={() => {
+              if (gameState.gameStatus !== GameStatus.PLAYING) {
+                return; // Don't allow interactions if game hasn't started
+              }
+
+              if (piece && piece.color === gameState.currentPlayer) {
+                actions.selectPiece(piece);
+              } else if (isValidMove && gameState.selectedPiece) {
+                // Handle move execution - create move object
+                const move: Move = {
+                  from: gameState.selectedPiece.position,
+                  to: { row, col },
+                  piece: gameState.selectedPiece,
+                  isKinging: false, // Will be determined by game logic
+                  isCapture: false, // Will be determined by game logic
+                  isMultipleJump: false, // Will be determined by game logic
+                };
+                actions.makeMove(move);
+              }
+            }}
+            onDrop={position => {
+              if (gameState.gameStatus !== GameStatus.PLAYING) {
+                return; // Don't allow interactions if game hasn't started
+              }
+
+              if (gameState.selectedPiece) {
+                // Create move object for drop
+                const move: Move = {
+                  from: gameState.selectedPiece.position,
+                  to: position,
+                  piece: gameState.selectedPiece,
+                  isKinging: false, // Will be determined by game logic
+                  isCapture: false, // Will be determined by game logic
+                  isMultipleJump: false, // Will be determined by game logic
+                };
+                actions.makeMove(move);
+              }
+            }}
+          >
+            {piece && (
+              <Piece
+                id={piece.id}
+                isLight={piece.color === PieceColor.LIGHT}
+                isKing={piece.isKing}
+                isDragging={false}
+                isDisabled={
+                  piece.color !== gameState.currentPlayer ||
+                  gameState.gameStatus !== GameStatus.PLAYING
+                }
+                piece={piece}
+                onClick={() => {
+                  if (
+                    piece.color === gameState.currentPlayer &&
+                    gameState.gameStatus === GameStatus.PLAYING
+                  ) {
+                    actions.selectPiece(piece);
+                  }
+                }}
+                onDragStart={draggedPiece => {
+                  if (
+                    draggedPiece.color === gameState.currentPlayer &&
+                    gameState.gameStatus === GameStatus.PLAYING
+                  ) {
+                    onDragStart(draggedPiece);
+                  }
+                }}
+                onDragEnd={() => {
+                  actions.deselectPiece();
+                  onDragEnd();
+                }}
+              />
+            )}
+          </Square>
         );
       }
     }
-    console.log(CONSOLE_MESSAGES.RENDERED_SQUARES(squares.length));
     return squares;
   };
 
@@ -119,29 +210,40 @@ export const GameController: React.FC<GameControllerProps> = ({ children }) => {
       <GameHeader>
         <h1>{TEXT.GAME_TITLE}</h1>
         <p>{TEXT.GAME_INSTRUCTIONS}</p>
+        <div>
+          <p>Status: {gameRules.getGameStatusMessage()}</p>
+          {gameState.gameStatus === GameStatus.WAITING && (
+            <button onClick={() => actions.startGame(GameMode.HUMAN_VS_HUMAN)}>
+              Start Game
+            </button>
+          )}
+          {gameState.gameStatus === GameStatus.PLAYING && (
+            <button onClick={() => actions.resetGame()}>Reset Game</button>
+          )}
+        </div>
       </GameHeader>
 
       <GameBoard>
         <GameInfo>
-          <PlayerInfo isActive={true}>
+          <PlayerInfo isActive={gameState.currentPlayer === PieceColor.LIGHT}>
             <strong>{TEXT.PLAYER_1_LABEL}</strong>
             <div>
-              {TEXT.PIECES_LABEL} {GAME_CONFIG.PIECES_PER_PLAYER}
+              {TEXT.PIECES_LABEL} {gameState.players.light.piecesRemaining}
             </div>
+            <div>Captures: {gameState.players.light.captures}</div>
           </PlayerInfo>
           <div>{TEXT.VS_LABEL}</div>
-          <PlayerInfo isActive={false}>
+          <PlayerInfo isActive={gameState.currentPlayer === PieceColor.DARK}>
             <strong>{TEXT.PLAYER_2_LABEL}</strong>
             <div>
-              {TEXT.PIECES_LABEL} {GAME_CONFIG.PIECES_PER_PLAYER}
+              {TEXT.PIECES_LABEL} {gameState.players.dark.piecesRemaining}
             </div>
+            <div>Captures: {gameState.players.dark.captures}</div>
           </PlayerInfo>
         </GameInfo>
 
         <Board>{renderBoard()}</Board>
       </GameBoard>
-
-      {children}
     </GameContainer>
   );
 };

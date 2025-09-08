@@ -127,7 +127,7 @@ export type GameEvent =
 export type GameAction =
   | { type: 'SELECT_PIECE'; piece: Piece }
   | { type: 'DESELECT_PIECE' }
-  | { type: 'MAKE_MOVE'; move: Move }
+  | { type: 'MAKE_MOVE'; move: Move; newGameState: GameState }
   | { type: 'START_GAME'; mode: GameMode }
   | { type: 'END_GAME'; result: GameResult }
   | { type: 'CHANGE_TURN' }

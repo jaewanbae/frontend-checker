@@ -1,7 +1,6 @@
 import {
   Board,
   Piece,
-  Position,
   Move,
   PieceColor,
   GameState,
@@ -14,13 +13,7 @@ import {
   checkGameOver,
   validateMove,
 } from './moveValidation';
-import {
-  movePiece,
-  removePiece,
-  promoteToKing,
-  getPieceAt,
-  setPieceAt,
-} from './gameLogic';
+import { movePiece, removePiece, promoteToKing, setPieceAt } from './gameLogic';
 import { GAME_CONFIG } from '../constants/gameConstants';
 
 // Game Rules Engine
@@ -278,7 +271,7 @@ export const isLegalMove = (gameState: GameState, move: Move): boolean => {
   const validMoves = engine.getValidMovesForCurrentPlayer();
 
   return validMoves.some(
-    (validMove) =>
+    validMove =>
       validMove.from.row === move.from.row &&
       validMove.from.col === move.from.col &&
       validMove.to.row === move.to.row &&

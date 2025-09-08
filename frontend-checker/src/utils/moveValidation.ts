@@ -61,7 +61,7 @@ export const validateMove = (
     // Check if piece can move in this direction
     const directions = getDiagonalDirections(piece);
     const isValidDirection = directions.some(
-      (direction) =>
+      direction =>
         from.row + direction.row === to.row &&
         from.col + direction.col === to.col
     );
@@ -107,10 +107,11 @@ export const getValidMovesForPiece = (
 ): Position[] => {
   const validMoves: Position[] = [];
   const directions = getDiagonalDirections(piece);
-
+  console.log(piece, 'PETERBAE');
+  console.log(directions, 'PETERBAE directions');
   // Check if player must capture
   const mustCapturePieces = getPiecesThatCanCapture(board, piece.color);
-  const canThisPieceCapture = mustCapturePieces.some((p) => p.id === piece.id);
+  const canThisPieceCapture = mustCapturePieces.some(p => p.id === piece.id);
 
   for (const direction of directions) {
     // Check normal move (1 square)
@@ -254,7 +255,7 @@ export const findJumpSequences = (
   const directions = getDiagonalDirections(piece);
 
   // Avoid infinite loops by checking if we've already visited this position
-  if (visited.some((pos) => pos.row === from.row && pos.col === from.col)) {
+  if (visited.some(pos => pos.row === from.row && pos.col === from.col)) {
     return sequences;
   }
 
@@ -298,7 +299,7 @@ export const findJumpSequences = (
           );
           if (furtherJumps.length > 0) {
             // Add this jump to the beginning of each further sequence
-            furtherJumps.forEach((sequence) => {
+            furtherJumps.forEach(sequence => {
               sequences.push([jumpTo, ...sequence]);
             });
           } else {
@@ -321,7 +322,7 @@ export const isMultipleJump = (
 ): boolean => {
   const sequences = findJumpSequences(board, piece, piece.position);
   return sequences.some(
-    (sequence) =>
+    sequence =>
       sequence.length > 1 &&
       sequence[sequence.length - 1].row === to.row &&
       sequence[sequence.length - 1].col === to.col
@@ -356,7 +357,7 @@ export const getBestCaptureMove = (
   color: PieceColor
 ): Move | null => {
   const captureMoves = getValidMovesForPlayer(board, color).filter(
-    (move) => move.isCapture
+    move => move.isCapture
   );
 
   if (captureMoves.length === 0) {
@@ -399,6 +400,6 @@ export const isValidMoveDestination = (
 ): boolean => {
   const validMoves = getValidMovesForHighlighting(board, piece);
   return validMoves.some(
-    (move) => move.row === position.row && move.col === position.col
+    move => move.row === position.row && move.col === position.col
   );
 };

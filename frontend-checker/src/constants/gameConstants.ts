@@ -60,12 +60,12 @@ export const MOVEMENT = {
     { row: 1, col: 1 }, // Down-right
   ],
   LIGHT_PIECE_DIRECTIONS: [
-    { row: 1, col: -1 }, // Up-left
-    { row: 1, col: 1 }, // Up-right
+    { row: 1, col: -1 }, // Down-left (light pieces move down)
+    { row: 1, col: 1 }, // Down-right (light pieces move down)
   ],
   DARK_PIECE_DIRECTIONS: [
-    { row: -1, col: -1 }, // Down-left
-    { row: -1, col: 1 }, // Down-right
+    { row: -1, col: -1 }, // Up-left (dark pieces move up)
+    { row: -1, col: 1 }, // Up-right (dark pieces move up)
   ],
 };
 

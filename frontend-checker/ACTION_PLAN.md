@@ -110,10 +110,10 @@ src/
 
 ### 3.1 Core Components
 
-- [ ] `Board` component - 8x8 grid with alternating colors
-- [ ] `Square` component - individual board squares with drag zones
-- [ ] `Piece` component - draggable game pieces using Pragmatic Drag and Drop
-- [ ] `GameController` - main game orchestration
+- [x] `Board` component - 8x8 grid with alternating colors
+- [x] `Square` component - individual board squares with drag zones
+- [x] `Piece` component - draggable game pieces using Pragmatic Drag and Drop
+- [x] `GameController` - main game orchestration
 
 ### 3.2 Pragmatic Drag and Drop Implementation
 
