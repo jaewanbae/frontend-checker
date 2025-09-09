@@ -84,6 +84,7 @@ export interface GameState {
   selectedPiece: Piece | null;
   validMoves: Position[];
   highlightedSquares: Position[];
+  currentJumpingPiece: Piece | null;
 }
 
 // Drag and drop types for Pragmatic Drag and Drop
@@ -127,7 +128,7 @@ export type GameEvent =
 export type GameAction =
   | { type: 'SELECT_PIECE'; piece: Piece }
   | { type: 'DESELECT_PIECE' }
-  | { type: 'MAKE_MOVE'; move: Move }
+  | { type: 'MAKE_MOVE'; move: Move; newGameState: GameState }
   | { type: 'START_GAME'; mode: GameMode }
   | { type: 'END_GAME'; result: GameResult }
   | { type: 'CHANGE_TURN' }

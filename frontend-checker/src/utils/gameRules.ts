@@ -1,7 +1,6 @@
 import {
   Board,
   Piece,
-  Position,
   Move,
   PieceColor,
   GameState,
@@ -13,14 +12,9 @@ import {
   hasValidMoves,
   checkGameOver,
   validateMove,
+  findJumpSequences,
 } from './moveValidation';
-import {
-  movePiece,
-  removePiece,
-  promoteToKing,
-  getPieceAt,
-  setPieceAt,
-} from './gameLogic';
+import { movePiece, removePiece, promoteToKing, setPieceAt } from './gameLogic';
 import { GAME_CONFIG } from '../constants/gameConstants';
 
 // Game Rules Engine
@@ -120,6 +114,7 @@ export class GameRulesEngine {
     this.gameState.currentPlayer = PieceColor.LIGHT;
     this.gameState.players.light.isActive = true;
     this.gameState.players.dark.isActive = false;
+    this.gameState.currentJumpingPiece = null;
   }
 
   pauseGame(): void {
@@ -166,10 +161,11 @@ export class GameRulesEngine {
       selectedPiece: null,
       validMoves: [],
       highlightedSquares: [],
+      currentJumpingPiece: null,
     };
   }
 
-  // Move Execution
+  // Execute a move (handles both single moves and multiple jumps)
   executeMove(move: Move): boolean {
     // Validate the move
     const validation = validateMove(
@@ -187,30 +183,40 @@ export class GameRulesEngine {
     let newBoard = movePiece(this.gameState.board, move.from, move.to);
 
     // Handle capture
-    if (move.capturedPiece) {
-      newBoard = removePiece(newBoard, move.capturedPiece.position);
+    if (validation.isCapture && validation.capturedPiece) {
+      newBoard = removePiece(newBoard, validation.capturedPiece.position);
 
-      // Update capture count
+      // Update capture counts
       if (move.piece.color === PieceColor.LIGHT) {
         this.gameState.players.light.captures++;
         this.gameState.stats.captures.light++;
+        this.gameState.players.dark.piecesRemaining--;
       } else {
         this.gameState.players.dark.captures++;
         this.gameState.stats.captures.dark++;
+        this.gameState.players.light.piecesRemaining--;
       }
     }
 
     // Handle kinging
-    if (move.isKinging) {
-      const kingedPiece = promoteToKing(move.piece);
+    let updatedMove = move;
+    if (validation.isKinging) {
+      const pieceAtNewPosition = { ...move.piece, position: move.to };
+      const kingedPiece = promoteToKing(pieceAtNewPosition);
       newBoard = setPieceAt(newBoard, move.to, kingedPiece);
+
+      // Update the move to reflect the kinged piece
+      updatedMove = {
+        ...move,
+        piece: kingedPiece,
+      };
     }
 
     // Update board
     this.gameState.board = newBoard;
 
-    // Add to move history
-    this.addMoveToHistory(move);
+    // Add to move history with updated piece information
+    this.addMoveToHistory(updatedMove);
 
     // Update move count
     this.gameState.stats.moveCount++;
@@ -222,7 +228,25 @@ export class GameRulesEngine {
       return true;
     }
 
-    // Switch turns
+    // Check if more jumps are available (for multiple jump sequences)
+    if (validation.isCapture && !validation.isKinging) {
+      const currentPiece = { ...move.piece, position: move.to };
+      const furtherJumpSequences = findJumpSequences(
+        this.gameState.board,
+        currentPiece,
+        move.to
+      );
+
+      // If there are more jumps available, don't switch turns
+      if (furtherJumpSequences.length > 0) {
+        // Set the current jumping piece to continue the sequence
+        this.gameState.currentJumpingPiece = currentPiece;
+        return true; // Don't switch turns
+      }
+    }
+
+    // Clear the current jumping piece and switch turns
+    this.gameState.currentJumpingPiece = null;
     this.switchTurn();
 
     return true;
@@ -232,13 +256,18 @@ export class GameRulesEngine {
   getValidMovesForCurrentPlayer(): Move[] {
     return getValidMovesForPlayer(
       this.gameState.board,
-      this.gameState.currentPlayer
+      this.gameState.currentPlayer,
+      this.gameState.currentJumpingPiece
     );
   }
 
   // Check if current player has valid moves
   currentPlayerHasValidMoves(): boolean {
-    return hasValidMoves(this.gameState.board, this.gameState.currentPlayer);
+    return hasValidMoves(
+      this.gameState.board,
+      this.gameState.currentPlayer,
+      this.gameState.currentJumpingPiece
+    );
   }
 
   // Game Statistics
@@ -270,20 +299,6 @@ export const createGameRulesEngine = (
   gameState: GameState
 ): GameRulesEngine => {
   return new GameRulesEngine(gameState);
-};
-
-// Check if a move is legal for the current game state
-export const isLegalMove = (gameState: GameState, move: Move): boolean => {
-  const engine = new GameRulesEngine(gameState);
-  const validMoves = engine.getValidMovesForCurrentPlayer();
-
-  return validMoves.some(
-    (validMove) =>
-      validMove.from.row === move.from.row &&
-      validMove.from.col === move.from.col &&
-      validMove.to.row === move.to.row &&
-      validMove.to.col === move.to.col
-  );
 };
 
 // Get game status message

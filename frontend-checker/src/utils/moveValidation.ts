@@ -61,7 +61,7 @@ export const validateMove = (
     // Check if piece can move in this direction
     const directions = getDiagonalDirections(piece);
     const isValidDirection = directions.some(
-      (direction) =>
+      direction =>
         from.row + direction.row === to.row &&
         from.col + direction.col === to.col
     );
@@ -107,10 +107,9 @@ export const getValidMovesForPiece = (
 ): Position[] => {
   const validMoves: Position[] = [];
   const directions = getDiagonalDirections(piece);
-
   // Check if player must capture
   const mustCapturePieces = getPiecesThatCanCapture(board, piece.color);
-  const canThisPieceCapture = mustCapturePieces.some((p) => p.id === piece.id);
+  const canThisPieceCapture = mustCapturePieces.some(p => p.id === piece.id);
 
   for (const direction of directions) {
     // Check normal move (1 square)
@@ -144,7 +143,8 @@ export const getValidMovesForPiece = (
 // Get all valid moves for a player including multiple jumps
 export const getValidMovesForPlayer = (
   board: Board,
-  color: PieceColor
+  color: PieceColor,
+  currentJumpingPiece?: Piece | null
 ): Move[] => {
   const validMoves: Move[] = [];
   const captureMoves: Move[] = [];
@@ -154,6 +154,10 @@ export const getValidMovesForPlayer = (
     for (let col = 0; col < board.size; col++) {
       const piece = board.squares[row][col];
       if (piece && piece.color === color) {
+        // If we're in a jumping sequence, only allow moves from the current jumping piece
+        if (currentJumpingPiece && piece.id !== currentJumpingPiece.id) {
+          continue;
+        }
         // Get basic moves
         const positions = getValidMovesForPiece(board, piece);
         for (const position of positions) {
@@ -184,25 +188,36 @@ export const getValidMovesForPlayer = (
 
         // Get multiple jump sequences
         const jumpSequences = findJumpSequences(board, piece, piece.position);
+
         for (const sequence of jumpSequences) {
           if (sequence.length > 0) {
             const finalPosition = sequence[sequence.length - 1];
-            const validation = validateMove(
+
+            // For multiple jump sequences, we need to validate the first jump
+            // The complete sequence validation will be done during execution
+            const firstJumpValidation = validateMove(
               board,
               piece,
               piece.position,
-              finalPosition
+              sequence[0]
             );
-            if (validation.isValid) {
-              captureMoves.push({
+
+            if (firstJumpValidation.isValid && firstJumpValidation.isCapture) {
+              // Check if this piece can be kinged at the final position
+              const finalPiece = { ...piece, position: finalPosition };
+              const isKinging = canPromoteToKing(finalPiece, finalPosition);
+
+              const move = {
                 from: piece.position,
                 to: finalPosition,
                 piece,
-                capturedPiece: validation.capturedPiece,
-                isKinging: validation.isKinging || false,
+                capturedPiece: firstJumpValidation.capturedPiece, // First captured piece
+                isKinging: isKinging,
                 isCapture: true,
                 isMultipleJump: sequence.length > 1,
-              });
+              };
+
+              captureMoves.push(move);
             }
           }
         }
@@ -228,8 +243,12 @@ export const checkKinging = (piece: Piece, to: Position): boolean => {
 };
 
 // Check if a player has any valid moves
-export const hasValidMoves = (board: Board, color: PieceColor): boolean => {
-  return getValidMovesForPlayer(board, color).length > 0;
+export const hasValidMoves = (
+  board: Board,
+  color: PieceColor,
+  currentJumpingPiece?: Piece | null
+): boolean => {
+  return getValidMovesForPlayer(board, color, currentJumpingPiece).length > 0;
 };
 
 // Check if the game is over
@@ -254,7 +273,7 @@ export const findJumpSequences = (
   const directions = getDiagonalDirections(piece);
 
   // Avoid infinite loops by checking if we've already visited this position
-  if (visited.some((pos) => pos.row === from.row && pos.col === from.col)) {
+  if (visited.some(pos => pos.row === from.row && pos.col === from.col)) {
     return sequences;
   }
 
@@ -290,16 +309,27 @@ export const findJumpSequences = (
           sequences.push([jumpTo]);
         } else {
           // Continue looking for more jumps
+          // Create a simulated board state after this jump
+          const simulatedBoard = { ...board };
+          simulatedBoard.squares = board.squares.map(row => [...row]);
+
+          // Remove the captured piece and move the jumping piece
+          simulatedBoard.squares[middlePosition.row][middlePosition.col] = null;
+          simulatedBoard.squares[from.row][from.col] = null;
+          simulatedBoard.squares[jumpTo.row][jumpTo.col] = newPiece;
+
           const furtherJumps = findJumpSequences(
-            board,
+            simulatedBoard,
             newPiece,
             jumpTo,
             newVisited
           );
+
           if (furtherJumps.length > 0) {
             // Add this jump to the beginning of each further sequence
-            furtherJumps.forEach((sequence) => {
-              sequences.push([jumpTo, ...sequence]);
+            furtherJumps.forEach(sequence => {
+              const fullSequence = [jumpTo, ...sequence];
+              sequences.push(fullSequence);
             });
           } else {
             // No further jumps possible, this is a single jump
@@ -313,50 +343,13 @@ export const findJumpSequences = (
   return sequences;
 };
 
-// Check if a move is a multiple jump
-export const isMultipleJump = (
-  board: Board,
-  piece: Piece,
-  to: Position
-): boolean => {
-  const sequences = findJumpSequences(board, piece, piece.position);
-  return sequences.some(
-    (sequence) =>
-      sequence.length > 1 &&
-      sequence[sequence.length - 1].row === to.row &&
-      sequence[sequence.length - 1].col === to.col
-  );
-};
-
-// Validate a complete move sequence
-export const validateMoveSequence = (
-  board: Board,
-  moves: Move[]
-): ValidationResult => {
-  if (moves.length === 0) {
-    return { isValid: false, reason: 'No moves provided' };
-  }
-
-  // Validate each move in the sequence
-  for (let i = 0; i < moves.length; i++) {
-    const move = moves[i];
-    const validation = validateMove(board, move.piece, move.from, move.to);
-
-    if (!validation.isValid) {
-      return validation;
-    }
-  }
-
-  return { isValid: true };
-};
-
 // Get the best capture move (for AI)
 export const getBestCaptureMove = (
   board: Board,
   color: PieceColor
 ): Move | null => {
   const captureMoves = getValidMovesForPlayer(board, color).filter(
-    (move) => move.isCapture
+    move => move.isCapture
   );
 
   if (captureMoves.length === 0) {
@@ -366,39 +359,4 @@ export const getBestCaptureMove = (
   // For now, return the first capture move
   // This can be enhanced with more sophisticated AI logic
   return captureMoves[0];
-};
-
-// Get valid moves for highlighting (for UI)
-export const getValidMovesForHighlighting = (
-  board: Board,
-  piece: Piece
-): Position[] => {
-  const validMoves: Position[] = [];
-
-  // Get basic moves
-  const basicMoves = getValidMovesForPiece(board, piece);
-  validMoves.push(...basicMoves);
-
-  // Get multiple jump sequences
-  const jumpSequences = findJumpSequences(board, piece, piece.position);
-  for (const sequence of jumpSequences) {
-    if (sequence.length > 0) {
-      const finalPosition = sequence[sequence.length - 1];
-      validMoves.push(finalPosition);
-    }
-  }
-
-  return validMoves;
-};
-
-// Check if a position is a valid move destination for highlighting
-export const isValidMoveDestination = (
-  board: Board,
-  piece: Piece,
-  position: Position
-): boolean => {
-  const validMoves = getValidMovesForHighlighting(board, piece);
-  return validMoves.some(
-    (move) => move.row === position.row && move.col === position.col
-  );
 };

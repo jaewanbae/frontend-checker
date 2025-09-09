@@ -21,8 +21,8 @@ export const BOARD_LAYOUT = {
   LIGHT_PIECE_END_ROW: 2,
   DARK_PIECE_START_ROW: 5,
   DARK_PIECE_END_ROW: 7,
-  KING_ROW_LIGHT: 0,
-  KING_ROW_DARK: 7,
+  KING_ROW_LIGHT: 7, // Light pieces reach the bottom row to become kings
+  KING_ROW_DARK: 0, // Dark pieces reach the top row to become kings
 } as const;
 
 // Game Rules Constants
@@ -60,12 +60,12 @@ export const MOVEMENT = {
     { row: 1, col: 1 }, // Down-right
   ],
   LIGHT_PIECE_DIRECTIONS: [
-    { row: 1, col: -1 }, // Up-left
-    { row: 1, col: 1 }, // Up-right
+    { row: 1, col: -1 }, // Down-left (light pieces move down)
+    { row: 1, col: 1 }, // Down-right (light pieces move down)
   ],
   DARK_PIECE_DIRECTIONS: [
-    { row: -1, col: -1 }, // Down-left
-    { row: -1, col: 1 }, // Down-right
+    { row: -1, col: -1 }, // Up-left (dark pieces move up)
+    { row: -1, col: 1 }, // Up-right (dark pieces move up)
   ],
 };
 

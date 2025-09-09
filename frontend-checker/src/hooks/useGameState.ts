@@ -7,21 +7,12 @@ import {
   Move,
   Position,
 } from '../types/game.types';
-import {
-  GAME_CONFIG,
-  GAME_STATE,
-  ERROR_MESSAGES,
-} from '../constants/gameConstants';
-import {
-  GameActionType,
-  PieceColor,
-  GameStatus,
-  GameResult,
-} from '../constants/gameEnums';
+import { GAME_CONFIG, GAME_STATE } from '../constants/gameConstants';
+import { PieceColor, GameStatus, GameResult } from '../constants/gameEnums';
 import { initializeBoard } from '../utils/gameLogic';
+import { getValidMovesForPlayer } from '../utils/moveValidation';
 import {
   createGameRulesEngine,
-  isLegalMove,
   getGameStatusMessage,
   isGameOver,
   isPlayerTurn,
@@ -135,6 +126,7 @@ const createInitialGameState = (): GameState => {
     selectedPiece: null,
     validMoves: [],
     highlightedSquares: [],
+    currentJumpingPiece: null,
   };
 };
 
@@ -142,10 +134,22 @@ const createInitialGameState = (): GameState => {
 const gameStateReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'SELECT_PIECE':
+      // Get all valid moves for the current player (enforces mandatory capture rule)
+      const allValidMoves = getValidMovesForPlayer(
+        state.board,
+        state.currentPlayer,
+        state.currentJumpingPiece
+      );
+
+      // Filter to only moves from the selected piece
+      const validMoves = allValidMoves
+        .filter(move => move.piece.id === action.piece.id)
+        .map(move => move.to);
+
       return {
         ...state,
         selectedPiece: action.piece,
-        validMoves: [], // Will be calculated by game logic
+        validMoves: validMoves,
         highlightedSquares: [action.piece.position],
       };
 
@@ -158,12 +162,11 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
       };
 
     case 'MAKE_MOVE':
-      // This will be implemented with proper game logic
+      // Use the new game state from the engine (move history is already updated by the engine)
       return {
-        ...state,
-        moveHistory: [...state.moveHistory, action.move],
+        ...action.newGameState,
         stats: {
-          ...state.stats,
+          ...action.newGameState.stats,
           moveCount: state.stats.moveCount + 1,
           lastMove: action.move,
         },
@@ -302,26 +305,25 @@ export const useGameState = () => {
         const engine = createGameRulesEngine(gameState);
 
         // Check if move is legal
-        if (!isLegalMove(gameState, move)) {
-          setError('Invalid move');
-          return;
-        }
+        // Move validation is handled by the engine
 
-        // Execute the move
+        // Execute the move (handles both single moves and multiple jump sequences)
         const moveExecuted = engine.executeMove(move);
 
         if (moveExecuted) {
-          // Update game state with new state from engine
+          // Get the updated game state from the engine
           const newGameState = engine.getGameState();
 
-          // Dispatch the move action
-          dispatch({ type: 'MAKE_MOVE', move });
+          // Dispatch the move action with the updated state
+          dispatch({
+            type: 'MAKE_MOVE',
+            move,
+            newGameState,
+          });
 
           // Check if game is over
           if (isGameOver(newGameState)) {
             dispatch({ type: 'END_GAME', result: newGameState.gameResult });
-          } else {
-            dispatch({ type: 'CHANGE_TURN' });
           }
         } else {
           setError('Failed to execute move');
@@ -344,6 +346,8 @@ export const useGameState = () => {
   }, []);
 
   const resetGame = useCallback(() => {
+    // Clear local storage to ensure completely fresh start
+    clearSavedGameState();
     dispatch({ type: 'RESET_GAME' });
     setError(null);
   }, []);

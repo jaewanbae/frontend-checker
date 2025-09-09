@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
+import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 
 const PieceContainer = styled.div<{
   isLight: boolean;
@@ -65,9 +66,11 @@ interface PieceProps {
   isLight: boolean;
   isKing: boolean;
   isDragging?: boolean;
-  onDragStart?: (e: React.DragEvent) => void;
-  onDragEnd?: (e: React.DragEvent) => void;
+  isDisabled?: boolean;
+  piece?: any; // Full piece object for drag operations
   onClick?: () => void;
+  onDragStart?: (piece: any) => void;
+  onDragEnd?: () => void;
 }
 
 export const Piece: React.FC<PieceProps> = ({
@@ -75,18 +78,38 @@ export const Piece: React.FC<PieceProps> = ({
   isLight,
   isKing,
   isDragging = false,
+  isDisabled = false,
+  piece,
+  onClick,
   onDragStart,
   onDragEnd,
-  onClick,
 }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const cleanup = draggable({
+      element,
+      getInitialData: () => ({ id, isLight, isKing }),
+      onDragStart: () => {
+        onDragStart?.(piece || { id, isLight, isKing });
+      },
+      onDrop: () => {
+        onDragEnd?.();
+      },
+    });
+
+    return cleanup;
+  }, [id, isLight, isKing, piece, onDragStart, onDragEnd]);
+
   return (
     <PieceContainer
+      ref={ref}
       isLight={isLight}
       isKing={isKing}
       isDragging={isDragging}
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
       onClick={onClick}
       data-piece-id={id}
     />
