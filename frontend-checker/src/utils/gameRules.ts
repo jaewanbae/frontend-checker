@@ -197,16 +197,24 @@ export class GameRulesEngine {
     }
 
     // Handle kinging
+    let updatedMove = move;
     if (validation.isKinging) {
-      const kingedPiece = promoteToKing(move.piece);
+      const pieceAtNewPosition = { ...move.piece, position: move.to };
+      const kingedPiece = promoteToKing(pieceAtNewPosition);
       newBoard = setPieceAt(newBoard, move.to, kingedPiece);
+
+      // Update the move to reflect the kinged piece
+      updatedMove = {
+        ...move,
+        piece: kingedPiece,
+      };
     }
 
     // Update board
     this.gameState.board = newBoard;
 
-    // Add to move history
-    this.addMoveToHistory(move);
+    // Add to move history with updated piece information
+    this.addMoveToHistory(updatedMove);
 
     // Update move count
     this.gameState.stats.moveCount++;

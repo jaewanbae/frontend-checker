@@ -39,13 +39,20 @@ const GameHeader = styled.div`
   text-align: center;
   margin-bottom: ${UI_CONFIG.GAP_SMALL};
   flex-shrink: 0;
+  min-height: 120px; /* Fixed height to prevent layout shifts */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
   @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
     margin-bottom: 4px;
+    min-height: 100px;
   }
 
   @media (max-height: 800px) {
     margin-bottom: 2px;
+    min-height: 80px;
   }
 `;
 
@@ -84,6 +91,36 @@ const PlayerInfo = styled.div<{ isActive: boolean }>`
   background-color: ${({ isActive, theme }) =>
     isActive ? theme.colors.selected : 'transparent'};
   transition: ${({ theme }) => theme.transitions.fast};
+`;
+
+const GameButton = styled.button`
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.textLight};
+  border: none;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transitions.fast};
+  min-width: 120px; /* Consistent button width */
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.secondary};
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const StatusMessage = styled.p`
+  margin: ${({ theme }) => theme.spacing.sm} 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 interface GameControllerProps {
@@ -236,15 +273,24 @@ export const GameController: React.FC<GameControllerProps> = () => {
         <h1>{TEXT.GAME_TITLE}</h1>
         <p>{TEXT.GAME_INSTRUCTIONS}</p>
         <div>
-          <p>Status: {gameRules.getGameStatusMessage()}</p>
-          {gameState.gameStatus === GameStatus.WAITING && (
-            <button onClick={() => actions.startGame(GameMode.HUMAN_VS_HUMAN)}>
-              Start Game
-            </button>
-          )}
-          {gameState.gameStatus === GameStatus.PLAYING && (
-            <button onClick={() => actions.resetGame()}>Reset Game</button>
-          )}
+          <StatusMessage>{gameRules.getGameStatusMessage()}</StatusMessage>
+          <div>
+            {gameState.gameStatus === GameStatus.WAITING && (
+              <GameButton
+                onClick={() => actions.startGame(GameMode.HUMAN_VS_HUMAN)}
+              >
+                Start Game
+              </GameButton>
+            )}
+            {(gameState.gameStatus === GameStatus.PLAYING ||
+              gameState.gameStatus === GameStatus.FINISHED) && (
+              <GameButton onClick={() => actions.resetGame()}>
+                {gameState.gameStatus === GameStatus.FINISHED
+                  ? 'Play Again'
+                  : 'Reset Game'}
+              </GameButton>
+            )}
+          </div>
         </div>
       </GameHeader>
 

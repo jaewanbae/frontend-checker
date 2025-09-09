@@ -21,8 +21,8 @@ export const BOARD_LAYOUT = {
   LIGHT_PIECE_END_ROW: 2,
   DARK_PIECE_START_ROW: 5,
   DARK_PIECE_END_ROW: 7,
-  KING_ROW_LIGHT: 0,
-  KING_ROW_DARK: 7,
+  KING_ROW_LIGHT: 7, // Light pieces reach the bottom row to become kings
+  KING_ROW_DARK: 0, // Dark pieces reach the top row to become kings
 } as const;
 
 // Game Rules Constants
