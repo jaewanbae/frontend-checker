@@ -54,7 +54,7 @@ const PieceContainer = styled.div<{
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 0.8em;
+      font-size: 1.2em;
       color: #ffd700;
       text-shadow: 1px 1px 2px #2a2a2a;
     }
