@@ -53,28 +53,7 @@ const MainGameArea = styled.div`
   }
 `;
 
-const GameHeader = styled.div`
-  text-align: center;
-  margin-bottom: ${UI_CONFIG.GAP_SMALL};
-  flex-shrink: 0;
-  min-height: 120px; /* Fixed height to prevent layout shifts */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
-    margin-bottom: 4px;
-    min-height: 100px;
-  }
-
-  @media (max-height: 800px) {
-    margin-bottom: 2px;
-    min-height: 80px;
-  }
-`;
-
-const GameBoard = styled.div`
+const GameBoardSection = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -87,6 +66,24 @@ const GameBoard = styled.div`
 
   @media (max-height: 800px) {
     gap: 2px;
+  }
+`;
+
+const GameHeader = styled.div`
+  text-align: center;
+  margin-bottom: ${UI_CONFIG.GAP_SMALL};
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
+    margin-bottom: 4px;
+  }
+
+  @media (max-height: 800px) {
+    margin-bottom: 2px;
   }
 `;
 
@@ -313,7 +310,7 @@ export const GameController: React.FC<GameControllerProps> = () => {
       </GameHeader>
 
       <MainGameArea>
-        <GameBoard>
+        <GameBoardSection>
           <GameInfo>
             <PlayerInfo isActive={gameState.currentPlayer === PieceColor.LIGHT}>
               <strong>{TEXT.PLAYER_1_LABEL}</strong>
@@ -333,7 +330,7 @@ export const GameController: React.FC<GameControllerProps> = () => {
           </GameInfo>
 
           <Board>{renderBoard()}</Board>
-        </GameBoard>
+        </GameBoardSection>
 
         <MoveHistory
           moves={gameState.moveHistory}
