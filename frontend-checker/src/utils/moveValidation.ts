@@ -143,7 +143,8 @@ export const getValidMovesForPiece = (
 // Get all valid moves for a player including multiple jumps
 export const getValidMovesForPlayer = (
   board: Board,
-  color: PieceColor
+  color: PieceColor,
+  currentJumpingPiece?: Piece | null
 ): Move[] => {
   const validMoves: Move[] = [];
   const captureMoves: Move[] = [];
@@ -153,6 +154,10 @@ export const getValidMovesForPlayer = (
     for (let col = 0; col < board.size; col++) {
       const piece = board.squares[row][col];
       if (piece && piece.color === color) {
+        // If we're in a jumping sequence, only allow moves from the current jumping piece
+        if (currentJumpingPiece && piece.id !== currentJumpingPiece.id) {
+          continue;
+        }
         // Get basic moves
         const positions = getValidMovesForPiece(board, piece);
         for (const position of positions) {
@@ -238,8 +243,12 @@ export const checkKinging = (piece: Piece, to: Position): boolean => {
 };
 
 // Check if a player has any valid moves
-export const hasValidMoves = (board: Board, color: PieceColor): boolean => {
-  return getValidMovesForPlayer(board, color).length > 0;
+export const hasValidMoves = (
+  board: Board,
+  color: PieceColor,
+  currentJumpingPiece?: Piece | null
+): boolean => {
+  return getValidMovesForPlayer(board, color, currentJumpingPiece).length > 0;
 };
 
 // Check if the game is over

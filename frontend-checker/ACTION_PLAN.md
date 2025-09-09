@@ -264,6 +264,9 @@ src/
 7. **✅ Reset game** → Complete reset with localStorage clearing (ALWAYS AVAILABLE!)
 8. **Visual feedback** → Valid moves highlighted, pieces selected
 9. **✅ Stable UI** → No layout shifts when game finishes (FIXED!)
+10. **✅ Sequential jumps** → Only jumping piece can continue jumping (FIXED!)
+11. **✅ Move History** → Complete move tracking with player, locations, captures, and kinging (NEW!)
+12. **✅ Code Quality** → All linting and compilation errors resolved (CLEAN!)
 
 ### **🚀 READY FOR PRODUCTION**
 

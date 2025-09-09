@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Board } from '../Board/Board';
 import { Square } from '../Square/Square';
 import { Piece } from '../Piece/Piece';
+import { MoveHistory } from '../UI/MoveHistory';
 import { useGameState } from '../../hooks/useGameState';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 import { PieceColor, Move } from '../../types/game.types';
@@ -35,6 +36,23 @@ const GameContainer = styled.div`
   }
 `;
 
+const MainGameArea = styled.div`
+  display: flex;
+  gap: ${UI_CONFIG.GAP_MEDIUM};
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  max-width: 1400px;
+  flex: 1;
+  overflow: hidden;
+
+  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
+    flex-direction: column;
+    align-items: center;
+    gap: ${UI_CONFIG.GAP_SMALL};
+  }
+`;
+
 const GameHeader = styled.div`
   text-align: center;
   margin-bottom: ${UI_CONFIG.GAP_SMALL};
@@ -61,8 +79,7 @@ const GameBoard = styled.div`
   flex-direction: column;
   align-items: center;
   gap: ${UI_CONFIG.GAP_SMALL};
-  flex: 1;
-  justify-content: center;
+  flex-shrink: 0;
 
   @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
     gap: 4px;
@@ -134,6 +151,7 @@ export const GameController: React.FC<GameControllerProps> = () => {
     board: gameState.board,
     currentPlayer: gameState.currentPlayer,
     gameStatus: gameState.gameStatus,
+    currentJumpingPiece: gameState.currentJumpingPiece,
     onPieceSelect: actions.selectPiece,
   });
 
@@ -294,27 +312,34 @@ export const GameController: React.FC<GameControllerProps> = () => {
         </div>
       </GameHeader>
 
-      <GameBoard>
-        <GameInfo>
-          <PlayerInfo isActive={gameState.currentPlayer === PieceColor.LIGHT}>
-            <strong>{TEXT.PLAYER_1_LABEL}</strong>
-            <div>
-              {TEXT.PIECES_LABEL} {gameState.players.light.piecesRemaining}
-            </div>
-            <div>Captures: {gameState.players.light.captures}</div>
-          </PlayerInfo>
-          <div>{TEXT.VS_LABEL}</div>
-          <PlayerInfo isActive={gameState.currentPlayer === PieceColor.DARK}>
-            <strong>{TEXT.PLAYER_2_LABEL}</strong>
-            <div>
-              {TEXT.PIECES_LABEL} {gameState.players.dark.piecesRemaining}
-            </div>
-            <div>Captures: {gameState.players.dark.captures}</div>
-          </PlayerInfo>
-        </GameInfo>
+      <MainGameArea>
+        <GameBoard>
+          <GameInfo>
+            <PlayerInfo isActive={gameState.currentPlayer === PieceColor.LIGHT}>
+              <strong>{TEXT.PLAYER_1_LABEL}</strong>
+              <div>
+                {TEXT.PIECES_LABEL} {gameState.players.light.piecesRemaining}
+              </div>
+              <div>Captures: {gameState.players.light.captures}</div>
+            </PlayerInfo>
+            <div>{TEXT.VS_LABEL}</div>
+            <PlayerInfo isActive={gameState.currentPlayer === PieceColor.DARK}>
+              <strong>{TEXT.PLAYER_2_LABEL}</strong>
+              <div>
+                {TEXT.PIECES_LABEL} {gameState.players.dark.piecesRemaining}
+              </div>
+              <div>Captures: {gameState.players.dark.captures}</div>
+            </PlayerInfo>
+          </GameInfo>
 
-        <Board>{renderBoard()}</Board>
-      </GameBoard>
+          <Board>{renderBoard()}</Board>
+        </GameBoard>
+
+        <MoveHistory
+          moves={gameState.moveHistory}
+          currentPlayer={gameState.currentPlayer}
+        />
+      </MainGameArea>
     </GameContainer>
   );
 };

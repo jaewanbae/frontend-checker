@@ -1,11 +1,18 @@
 import { useState, useCallback } from 'react';
-import { Piece, Position, Board, GameStatus } from '../types/game.types';
-import { getValidMovesForPiece } from '../utils/moveValidation';
+import {
+  Piece,
+  Position,
+  Board,
+  GameStatus,
+  PieceColor,
+} from '../types/game.types';
+import { getValidMovesForPlayer } from '../utils/moveValidation';
 
 interface UseDragAndDropProps {
   board: Board;
-  currentPlayer: string;
+  currentPlayer: PieceColor;
   gameStatus: string;
+  currentJumpingPiece?: Piece | null;
   onPieceSelect?: (piece: Piece) => void;
 }
 
@@ -13,6 +20,7 @@ export const useDragAndDrop = ({
   board,
   currentPlayer,
   gameStatus,
+  currentJumpingPiece,
   onPieceSelect,
 }: UseDragAndDropProps) => {
   const [activePiece, setActivePiece] = useState<Piece | null>(null);
@@ -27,8 +35,18 @@ export const useDragAndDrop = ({
 
       setActivePiece(piece);
 
-      // Calculate valid drop positions for this piece
-      const validMoves = getValidMovesForPiece(board, piece);
+      // Get all valid moves for the current player (enforces mandatory capture rule)
+      const allValidMoves = getValidMovesForPlayer(
+        board,
+        currentPlayer,
+        currentJumpingPiece
+      );
+
+      // Filter to only moves from the selected piece
+      const validMoves = allValidMoves
+        .filter(move => move.piece.id === piece.id)
+        .map(move => move.to);
+
       setValidDropPositions(validMoves);
 
       // Select the piece in game state when dragging starts
@@ -37,7 +55,7 @@ export const useDragAndDrop = ({
         onPieceSelect(piece);
       }
     },
-    [board, currentPlayer, gameStatus, onPieceSelect]
+    [board, currentPlayer, gameStatus, currentJumpingPiece, onPieceSelect]
   );
 
   const onDragEnd = useCallback(() => {

@@ -114,6 +114,7 @@ export class GameRulesEngine {
     this.gameState.currentPlayer = PieceColor.LIGHT;
     this.gameState.players.light.isActive = true;
     this.gameState.players.dark.isActive = false;
+    this.gameState.currentJumpingPiece = null;
   }
 
   pauseGame(): void {
@@ -160,6 +161,7 @@ export class GameRulesEngine {
       selectedPiece: null,
       validMoves: [],
       highlightedSquares: [],
+      currentJumpingPiece: null,
     };
   }
 
@@ -237,11 +239,14 @@ export class GameRulesEngine {
 
       // If there are more jumps available, don't switch turns
       if (furtherJumpSequences.length > 0) {
+        // Set the current jumping piece to continue the sequence
+        this.gameState.currentJumpingPiece = currentPiece;
         return true; // Don't switch turns
       }
     }
 
-    // Switch turns
+    // Clear the current jumping piece and switch turns
+    this.gameState.currentJumpingPiece = null;
     this.switchTurn();
 
     return true;
@@ -251,13 +256,18 @@ export class GameRulesEngine {
   getValidMovesForCurrentPlayer(): Move[] {
     return getValidMovesForPlayer(
       this.gameState.board,
-      this.gameState.currentPlayer
+      this.gameState.currentPlayer,
+      this.gameState.currentJumpingPiece
     );
   }
 
   // Check if current player has valid moves
   currentPlayerHasValidMoves(): boolean {
-    return hasValidMoves(this.gameState.board, this.gameState.currentPlayer);
+    return hasValidMoves(
+      this.gameState.board,
+      this.gameState.currentPlayer,
+      this.gameState.currentJumpingPiece
+    );
   }
 
   // Game Statistics

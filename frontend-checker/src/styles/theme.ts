@@ -31,6 +31,12 @@ export const theme = {
     selected: '#bbdefb',
     validMove: '#c8e6c9',
     invalidMove: '#ffcdd2',
+
+    // Additional colors
+    border: '#dee2e6',
+    light: '#ffffff',
+    dark: '#000000',
+    error: '#e74c3c',
   },
 
   spacing: {
@@ -43,6 +49,7 @@ export const theme = {
   },
 
   borderRadius: {
+    xs: '2px',
     sm: '4px',
     md: '8px',
     lg: '12px',

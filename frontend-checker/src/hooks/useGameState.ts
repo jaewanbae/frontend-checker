@@ -10,13 +10,13 @@ import {
 import { GAME_CONFIG, GAME_STATE } from '../constants/gameConstants';
 import { PieceColor, GameStatus, GameResult } from '../constants/gameEnums';
 import { initializeBoard } from '../utils/gameLogic';
+import { getValidMovesForPlayer } from '../utils/moveValidation';
 import {
   createGameRulesEngine,
   getGameStatusMessage,
   isGameOver,
   isPlayerTurn,
 } from '../utils/gameRules';
-import { getValidMovesForPiece } from '../utils/moveValidation';
 
 // Game state persistence keys
 const GAME_STATE_KEY = 'checkers-game-state';
@@ -126,6 +126,7 @@ const createInitialGameState = (): GameState => {
     selectedPiece: null,
     validMoves: [],
     highlightedSquares: [],
+    currentJumpingPiece: null,
   };
 };
 
@@ -133,7 +134,18 @@ const createInitialGameState = (): GameState => {
 const gameStateReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'SELECT_PIECE':
-      const validMoves = getValidMovesForPiece(state.board, action.piece);
+      // Get all valid moves for the current player (enforces mandatory capture rule)
+      const allValidMoves = getValidMovesForPlayer(
+        state.board,
+        state.currentPlayer,
+        state.currentJumpingPiece
+      );
+
+      // Filter to only moves from the selected piece
+      const validMoves = allValidMoves
+        .filter(move => move.piece.id === action.piece.id)
+        .map(move => move.to);
+
       return {
         ...state,
         selectedPiece: action.piece,
@@ -150,10 +162,9 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
       };
 
     case 'MAKE_MOVE':
-      // Use the new game state from the engine and update move history
+      // Use the new game state from the engine (move history is already updated by the engine)
       return {
         ...action.newGameState,
-        moveHistory: [...state.moveHistory, action.move],
         stats: {
           ...action.newGameState.stats,
           moveCount: state.stats.moveCount + 1,

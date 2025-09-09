@@ -84,6 +84,7 @@ export interface GameState {
   selectedPiece: Piece | null;
   validMoves: Position[];
   highlightedSquares: Position[];
+  currentJumpingPiece: Piece | null;
 }
 
 // Drag and drop types for Pragmatic Drag and Drop
