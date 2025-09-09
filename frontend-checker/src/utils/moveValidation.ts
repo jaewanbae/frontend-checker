@@ -25,17 +25,11 @@ export const validateMove = (
   to: Position
 ): ValidationResult => {
   // Basic validation
-  if (!isOnBoard(to)) {
+  if (!isOnBoard(to) || !isOnBoard(from)) {
     return { isValid: false, reason: 'Position is out of bounds' };
   }
 
-  if (!isOnBoard(from)) {
-    return { isValid: false, reason: 'From position is out of bounds' };
-  }
-
-  // Check if destination is empty
-  const destinationPiece = getPieceAt(board, to);
-  if (destinationPiece) {
+  if (getPieceAt(board, to)) {
     return { isValid: false, reason: 'Destination is occupied' };
   }
 

@@ -117,18 +117,6 @@ export class GameRulesEngine {
     this.gameState.currentJumpingPiece = null;
   }
 
-  pauseGame(): void {
-    if (this.gameState.gameStatus === GameStatus.PLAYING) {
-      this.gameState.gameStatus = GameStatus.PAUSED;
-    }
-  }
-
-  resumeGame(): void {
-    if (this.gameState.gameStatus === GameStatus.PAUSED) {
-      this.gameState.gameStatus = GameStatus.PLAYING;
-    }
-  }
-
   endGame(result: GameResult): void {
     this.gameState.gameStatus = GameStatus.FINISHED;
     this.gameState.gameResult = result;
@@ -187,15 +175,14 @@ export class GameRulesEngine {
       newBoard = removePiece(newBoard, validation.capturedPiece.position);
 
       // Update capture counts
-      if (move.piece.color === PieceColor.LIGHT) {
-        this.gameState.players.light.captures++;
-        this.gameState.stats.captures.light++;
-        this.gameState.players.dark.piecesRemaining--;
-      } else {
-        this.gameState.players.dark.captures++;
-        this.gameState.stats.captures.dark++;
-        this.gameState.players.light.piecesRemaining--;
-      }
+      const capturingPlayer =
+        move.piece.color === PieceColor.LIGHT ? 'light' : 'dark';
+      const capturedPlayer =
+        move.piece.color === PieceColor.LIGHT ? 'dark' : 'light';
+
+      this.gameState.players[capturingPlayer].captures++;
+      this.gameState.stats.captures[capturingPlayer]++;
+      this.gameState.players[capturedPlayer].piecesRemaining--;
     }
 
     // Handle kinging
@@ -308,8 +295,6 @@ export const getGameStatusMessage = (gameState: GameState): string => {
       return 'Waiting to start game';
     case GameStatus.PLAYING:
       return `Current player: ${gameState.currentPlayer === PieceColor.LIGHT ? 'Light' : 'Dark'}`;
-    case GameStatus.PAUSED:
-      return 'Game is paused';
     case GameStatus.FINISHED:
       switch (gameState.gameResult) {
         case GameResult.LIGHT_WINS:

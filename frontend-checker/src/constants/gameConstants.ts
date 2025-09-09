@@ -76,22 +76,6 @@ export const GAME_STATE = {
   INITIAL_CAPTURES: 0,
 } as const;
 
-// Error Messages
-export const ERROR_MESSAGES = {
-  FAILED_TO_SELECT_PIECE: 'Failed to select piece',
-  FAILED_TO_MAKE_MOVE: 'Failed to make move',
-  FAILED_TO_START_GAME: 'Failed to start game',
-  INVALID_POSITION: 'Invalid position',
-  INVALID_MOVE: 'Invalid move',
-  PIECE_NOT_FOUND: 'Piece not found',
-} as const;
-
-// Console Messages
-export const CONSOLE_MESSAGES = {
-  RENDERED_SQUARES: (count: number) => `Rendered ${count} squares`,
-  CLICKED_SQUARE: (row: number, col: number) => `Clicked square ${row},${col}`,
-} as const;
-
 // Text Constants
 export const TEXT = {
   GAME_TITLE: 'Checkers Game',
@@ -100,12 +84,4 @@ export const TEXT = {
   PLAYER_2_LABEL: 'Player 2 (Dark)',
   PIECES_LABEL: 'Pieces:',
   VS_LABEL: 'VS',
-} as const;
-
-// Validation Constants
-export const VALIDATION = {
-  MIN_ROW: 0,
-  MIN_COL: 0,
-  MAX_ROW: GAME_CONFIG.BOARD_SIZE - 1,
-  MAX_COL: GAME_CONFIG.BOARD_SIZE - 1,
 } as const;

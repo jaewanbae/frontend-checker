@@ -20,29 +20,24 @@ export const evaluateBoard = (
   for (let row = 0; row < board.size; row++) {
     for (let col = 0; col < board.size; col++) {
       const piece = board.squares[row][col];
-      if (piece) {
-        let pieceValue = piece.isKing ? 3 : 1;
+      if (!piece) continue;
 
-        // Add positional bonuses
-        if (piece.color === playerColor) {
-          // Bonus for pieces closer to the opponent's side
-          if (piece.color === 'light') {
-            pieceValue += (7 - row) * 0.1;
-          } else {
-            pieceValue += row * 0.1;
-          }
+      let pieceValue = piece.isKing ? 3 : 1;
 
-          // Bonus for kings
-          if (piece.isKing) {
-            pieceValue += 0.5;
-          }
-
-          score += pieceValue;
-        } else {
-          // Penalty for opponent pieces
-          score -= pieceValue;
-        }
+      // Add positional bonus for pieces closer to opponent's side
+      if (piece.color === 'light') {
+        pieceValue += (7 - row) * 0.1;
+      } else {
+        pieceValue += row * 0.1;
       }
+
+      // Add king bonus
+      if (piece.isKing) {
+        pieceValue += 0.5;
+      }
+
+      // Add or subtract based on piece ownership
+      score += piece.color === playerColor ? pieceValue : -pieceValue;
     }
   }
 
@@ -130,17 +125,17 @@ const minimax = (
     );
 
     // Update best move and score
+    const isBetter = isMaximizing
+      ? result.score > bestScore
+      : result.score < bestScore;
+    if (isBetter) {
+      bestScore = result.score;
+      bestMove = move;
+    }
+
     if (isMaximizing) {
-      if (result.score > bestScore) {
-        bestScore = result.score;
-        bestMove = move;
-      }
       alpha = Math.max(alpha, result.score);
     } else {
-      if (result.score < bestScore) {
-        bestScore = result.score;
-        bestMove = move;
-      }
       beta = Math.min(beta, result.score);
     }
 

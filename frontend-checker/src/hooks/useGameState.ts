@@ -197,38 +197,27 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
       };
 
     case 'CHANGE_TURN':
+      const newPlayer =
+        state.currentPlayer === PieceColor.LIGHT
+          ? PieceColor.DARK
+          : PieceColor.LIGHT;
       return {
         ...state,
-        currentPlayer:
-          state.currentPlayer === PieceColor.LIGHT
-            ? PieceColor.DARK
-            : PieceColor.LIGHT,
+        currentPlayer: newPlayer,
         players: {
           light: {
             ...state.players.light,
-            isActive: state.currentPlayer === PieceColor.DARK,
+            isActive: newPlayer === PieceColor.LIGHT,
           },
           dark: {
             ...state.players.dark,
-            isActive: state.currentPlayer === PieceColor.LIGHT,
+            isActive: newPlayer === PieceColor.DARK,
           },
         },
       };
 
     case 'RESET_GAME':
       return createInitialGameState();
-
-    case 'PAUSE_GAME':
-      return {
-        ...state,
-        gameStatus: GameStatus.PAUSED,
-      };
-
-    case 'RESUME_GAME':
-      return {
-        ...state,
-        gameStatus: GameStatus.PLAYING,
-      };
 
     case 'UPDATE_STATS':
       return {
@@ -285,11 +274,7 @@ export const useGameState = () => {
   }, [gameState]);
 
   const selectPiece = useCallback((piece: Piece) => {
-    try {
-      dispatch({ type: 'SELECT_PIECE', piece });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to select piece');
-    }
+    dispatch({ type: 'SELECT_PIECE', piece });
   }, []);
 
   const deselectPiece = useCallback(() => {
@@ -338,11 +323,7 @@ export const useGameState = () => {
   );
 
   const startGame = useCallback((mode: GameMode) => {
-    try {
-      dispatch({ type: 'START_GAME', mode });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start game');
-    }
+    dispatch({ type: 'START_GAME', mode });
   }, []);
 
   const resetGame = useCallback(() => {
@@ -350,14 +331,6 @@ export const useGameState = () => {
     clearSavedGameState();
     dispatch({ type: 'RESET_GAME' });
     setError(null);
-  }, []);
-
-  const pauseGame = useCallback(() => {
-    dispatch({ type: 'PAUSE_GAME' });
-  }, []);
-
-  const resumeGame = useCallback(() => {
-    dispatch({ type: 'RESUME_GAME' });
   }, []);
 
   const highlightMoves = useCallback((positions: Position[]) => {
@@ -369,32 +342,18 @@ export const useGameState = () => {
   }, []);
 
   const saveGame = useCallback(() => {
-    try {
-      saveGameState(gameState);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save game');
-    }
+    saveGameState(gameState);
   }, [gameState]);
 
   const loadGame = useCallback(() => {
-    try {
-      const savedState = loadGameState();
-      if (savedState) {
-        dispatch({ type: 'LOAD_SAVED_GAME', savedState });
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load game');
+    const savedState = loadGameState();
+    if (savedState) {
+      dispatch({ type: 'LOAD_SAVED_GAME', savedState });
     }
   }, []);
 
   const clearSavedGame = useCallback(() => {
-    try {
-      clearSavedGameState();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to clear saved game'
-      );
-    }
+    clearSavedGameState();
   }, []);
 
   // Game rules utilities
@@ -434,8 +393,6 @@ export const useGameState = () => {
       makeMove,
       startGame,
       resetGame,
-      pauseGame,
-      resumeGame,
       highlightMoves,
       clearHighlights,
       saveGame,

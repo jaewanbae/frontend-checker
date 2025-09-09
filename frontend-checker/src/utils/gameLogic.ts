@@ -7,49 +7,49 @@ import {
 } from '../constants/gameConstants';
 import { PieceType } from '../constants/gameEnums';
 
+// Helper function to create a piece
+const createPiece = (color: PieceColor, row: number, col: number): Piece => ({
+  id: `${color}-${row}-${col}`,
+  color,
+  type: PieceType.PAWN,
+  position: { row, col },
+  isKing: false,
+});
+
+// Helper function to place pieces for a color
+const placePiecesForColor = (
+  squares: (Piece | null)[][],
+  color: PieceColor,
+  startRow: number,
+  endRow: number
+): void => {
+  for (let row = startRow; row <= endRow; row++) {
+    for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
+      if ((row + col) % 2 === BOARD_LAYOUT.DARK_SQUARE_PATTERN) {
+        squares[row][col] = createPiece(color, row, col);
+      }
+    }
+  }
+};
+
 // Initialize the board with pieces in starting positions
 export const initializeBoard = (): Board => {
   const squares: (Piece | null)[][] = Array(GAME_CONFIG.BOARD_SIZE)
     .fill(null)
     .map(() => Array(GAME_CONFIG.BOARD_SIZE).fill(null));
 
-  // Place light pieces (top 3 rows)
-  for (
-    let row = BOARD_LAYOUT.LIGHT_PIECE_START_ROW;
-    row <= BOARD_LAYOUT.LIGHT_PIECE_END_ROW;
-    row++
-  ) {
-    for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
-      if ((row + col) % 2 === BOARD_LAYOUT.DARK_SQUARE_PATTERN) {
-        squares[row][col] = {
-          id: `light-${row}-${col}`,
-          color: PieceColor.LIGHT,
-          type: PieceType.PAWN,
-          position: { row, col },
-          isKing: false,
-        };
-      }
-    }
-  }
-
-  // Place dark pieces (bottom 3 rows)
-  for (
-    let row = BOARD_LAYOUT.DARK_PIECE_START_ROW;
-    row <= BOARD_LAYOUT.DARK_PIECE_END_ROW;
-    row++
-  ) {
-    for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
-      if ((row + col) % 2 === BOARD_LAYOUT.DARK_SQUARE_PATTERN) {
-        squares[row][col] = {
-          id: `dark-${row}-${col}`,
-          color: PieceColor.DARK,
-          type: PieceType.PAWN,
-          position: { row, col },
-          isKing: false,
-        };
-      }
-    }
-  }
+  placePiecesForColor(
+    squares,
+    PieceColor.LIGHT,
+    BOARD_LAYOUT.LIGHT_PIECE_START_ROW,
+    BOARD_LAYOUT.LIGHT_PIECE_END_ROW
+  );
+  placePiecesForColor(
+    squares,
+    PieceColor.DARK,
+    BOARD_LAYOUT.DARK_PIECE_START_ROW,
+    BOARD_LAYOUT.DARK_PIECE_END_ROW
+  );
 
   return {
     squares,
@@ -71,11 +71,6 @@ export const getPiecesByColor = (board: Board, color: PieceColor): Piece[] => {
   }
 
   return pieces;
-};
-
-// Count pieces by color
-export const countPiecesByColor = (board: Board, color: PieceColor): number => {
-  return getPiecesByColor(board, color).length;
 };
 
 // Check if a position is on the board

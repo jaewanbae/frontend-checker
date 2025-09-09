@@ -133,42 +133,10 @@ export type GameAction =
   | { type: 'END_GAME'; result: GameResult }
   | { type: 'CHANGE_TURN' }
   | { type: 'RESET_GAME' }
-  | { type: 'PAUSE_GAME' }
-  | { type: 'RESUME_GAME' }
   | { type: 'UPDATE_STATS'; stats: Partial<GameStats> }
   | { type: 'HIGHLIGHT_MOVES'; positions: Position[] }
   | { type: 'CLEAR_HIGHLIGHTS' }
   | { type: 'LOAD_SAVED_GAME'; savedState: Partial<GameState> };
-
-// Component props types
-export interface BoardProps {
-  board: Board;
-  selectedPiece: Piece | null;
-  validMoves: Position[];
-  highlightedSquares: Position[];
-  onSquareClick: (position: Position) => void;
-  onPieceDragStart: (piece: Piece) => void;
-  onPieceDragEnd: (piece: Piece, position: Position) => void;
-}
-
-export interface SquareProps {
-  position: Position;
-  piece: Piece | null;
-  isLight: boolean;
-  isHighlighted: boolean;
-  isValidMove: boolean;
-  isSelected: boolean;
-  onClick: () => void;
-  onDrop: (piece: Piece) => void;
-}
-
-export interface PieceProps {
-  piece: Piece;
-  isDragging: boolean;
-  onDragStart: (piece: Piece) => void;
-  onDragEnd: (piece: Piece) => void;
-  onClick: (piece: Piece) => void;
-}
 
 // Hook return types
 export interface UseGameStateReturn {
@@ -178,21 +146,9 @@ export interface UseGameStateReturn {
     makeMove: (move: Move) => void;
     startGame: (mode: GameMode) => void;
     resetGame: () => void;
-    pauseGame: () => void;
-    resumeGame: () => void;
   };
   isLoading: boolean;
   error: string | null;
-}
-
-export interface UseDragAndDropReturn {
-  isDragging: boolean;
-  draggedPiece: Piece | null;
-  validDropPositions: Position[];
-  onDragStart: (piece: Piece) => void;
-  onDragEnd: (position: Position) => void;
-  onDragOver: (position: Position) => void;
-  onDrop: (position: Position) => void;
 }
 
 // Utility types
