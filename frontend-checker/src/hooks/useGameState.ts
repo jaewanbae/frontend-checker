@@ -251,7 +251,6 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
       // Get the last move
       const lastMove = state.moveHistory[state.moveHistory.length - 1];
 
-      console.log(lastMove, 'PETERBAE');
       // Create a new board state by reversing the last move
       let newBoard = { ...state.board };
 
