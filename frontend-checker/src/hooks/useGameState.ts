@@ -9,7 +9,7 @@ import {
 } from '../types/game.types';
 import { GAME_CONFIG, GAME_STATE } from '../constants/gameConstants';
 import { PieceColor, GameStatus, GameResult } from '../constants/gameEnums';
-import { initializeBoard } from '../utils/gameLogic';
+import { initializeBoard, setPieceAt } from '../utils/gameLogic';
 import { getValidMovesForPlayer } from '../utils/moveValidation';
 import {
   createGameRulesEngine,
@@ -243,6 +243,90 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
         ...action.savedState,
       };
 
+    case 'UNDO_MOVE':
+      if (state.moveHistory.length === 0) {
+        return state; // No moves to undo
+      }
+
+      // Get the last move
+      const lastMove = state.moveHistory[state.moveHistory.length - 1];
+
+      console.log(lastMove, 'PETERBAE');
+      // Create a new board state by reversing the last move
+      let newBoard = { ...state.board };
+
+      // Move the piece back to its original position
+      const pieceToMoveBack = { ...lastMove.piece, position: lastMove.from };
+      newBoard = setPieceAt(newBoard, lastMove.to, null);
+      newBoard = setPieceAt(newBoard, lastMove.from, pieceToMoveBack);
+
+      // If there was a captured piece, restore it
+      if (lastMove.capturedPiece) {
+        newBoard = setPieceAt(
+          newBoard,
+          lastMove.capturedPiece.position,
+          lastMove.capturedPiece
+        );
+      }
+
+      // If the piece was kinged, revert it back to a regular piece
+      let revertedPiece = pieceToMoveBack;
+      if (lastMove.isKinging) {
+        revertedPiece = { ...pieceToMoveBack, isKing: false };
+        newBoard = setPieceAt(newBoard, lastMove.from, revertedPiece);
+      }
+
+      // Update capture counts
+      const capturingPlayer =
+        lastMove.piece.color === PieceColor.LIGHT ? 'light' : 'dark';
+      const capturedPlayer =
+        lastMove.piece.color === PieceColor.LIGHT ? 'dark' : 'light';
+
+      const newPlayers = { ...state.players };
+      if (lastMove.capturedPiece) {
+        newPlayers[capturingPlayer].captures = Math.max(
+          0,
+          newPlayers[capturingPlayer].captures - 1
+        );
+        newPlayers[capturedPlayer].piecesRemaining = Math.min(
+          GAME_CONFIG.PIECES_PER_PLAYER,
+          newPlayers[capturedPlayer].piecesRemaining + 1
+        );
+      }
+
+      // Update stats
+      const newStats = { ...state.stats };
+      newStats.moveCount = Math.max(0, newStats.moveCount - 1);
+      if (lastMove.capturedPiece) {
+        newStats.captures[capturingPlayer] = Math.max(
+          0,
+          newStats.captures[capturingPlayer] - 1
+        );
+      }
+
+      // Remove the last move from history
+      const newMoveHistory = state.moveHistory.slice(0, -1);
+
+      // Determine the previous player (the one who made the move we're undoing)
+      const previousPlayer = lastMove.piece.color;
+
+      // Update player active states
+      newPlayers.light.isActive = previousPlayer === PieceColor.LIGHT;
+      newPlayers.dark.isActive = previousPlayer === PieceColor.DARK;
+
+      return {
+        ...state,
+        board: newBoard,
+        currentPlayer: previousPlayer,
+        players: newPlayers,
+        stats: newStats,
+        moveHistory: newMoveHistory,
+        currentJumpingPiece: null, // Clear any jumping piece state
+        selectedPiece: null,
+        validMoves: [],
+        highlightedSquares: [],
+      };
+
     default:
       return state;
   }
@@ -322,6 +406,13 @@ export const useGameState = () => {
     [gameState]
   );
 
+  const undoMove = useCallback(() => {
+    if (gameState.moveHistory.length === 0) {
+      return; // No moves to undo
+    }
+    dispatch({ type: 'UNDO_MOVE' });
+  }, [gameState.moveHistory.length]);
+
   const startGame = useCallback((mode: GameMode) => {
     dispatch({ type: 'START_GAME', mode });
   }, []);
@@ -398,6 +489,7 @@ export const useGameState = () => {
       saveGame,
       loadGame,
       clearSavedGame,
+      undoMove,
     },
     gameRules: {
       getCurrentPlayer,

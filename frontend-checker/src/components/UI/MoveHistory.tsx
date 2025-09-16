@@ -7,6 +7,7 @@ import { GAME_CONFIG } from '../../constants/gameConstants';
 interface MoveHistoryProps {
   moves: Move[];
   currentPlayer: PieceColor;
+  undoMove: () => void;
 }
 
 const MoveHistoryContainer = styled.div`
@@ -82,19 +83,6 @@ const MoveDetails = styled.div`
   align-items: center;
 `;
 
-const MoveLocation = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  font-size: 0.9rem;
-`;
-
-const LocationLabel = styled.span`
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  min-width: 60px;
-`;
-
 const LocationValue = styled.span`
   font-family: 'Courier New', monospace;
   background-color: ${({ theme }) => theme.colors.background};
@@ -141,6 +129,41 @@ const EmptyStateText = styled.p`
   line-height: 1.4;
 `;
 
+const UndoButton = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: ${({ theme }) => theme.borderRadius.full};
+  background-color: ${({ theme }) => theme.colors.background};
+  border: 2px solid ${({ theme }) => theme.colors.danger};
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: auto;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.danger};
+    color: ${({ theme }) => theme.colors.textLight};
+    transform: scale(1.15) rotate(-15deg);
+    box-shadow: 0 3px 10px #dc26264d;
+  }
+
+  &:active {
+    transform: scale(0.95) rotate(-10deg);
+    box-shadow: 0 1px 4px #dc262666;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px #dc262633;
+  }
+`;
+
 // Helper function to format position as chess notation
 const formatPosition = (row: number, col: number): string => {
   const file = String.fromCharCode(97 + col); // a-h
@@ -159,6 +182,7 @@ const getPieceSymbol = (pieceType: PieceType, isKing: boolean): string => {
 export const MoveHistory: React.FC<MoveHistoryProps> = ({
   moves,
   currentPlayer,
+  undoMove,
 }) => {
   const movesListRef = useRef<HTMLDivElement>(null);
 
@@ -201,7 +225,10 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({
               <MoveHeader>
                 <PlayerName color={move.piece.color}>
                   {pieceSymbol}{' '}
-                  {move.piece.color === PieceColor.LIGHT ? 'Light' : 'Dark'}
+                  {move.piece.color === PieceColor.LIGHT ? 'Light' : 'Dark'}{' '}
+                  {move.piece.isKing && (
+                    <ActionBadge type="kinging">King</ActionBadge>
+                  )}
                 </PlayerName>
                 <MoveNumber>#{index + 1}</MoveNumber>
               </MoveHeader>
@@ -214,6 +241,11 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({
                 <LocationValue>
                   {formatPosition(move.to.row, move.to.col)}
                 </LocationValue>
+                {index === moves.length - 1 && (
+                  <UndoButton onClick={undoMove} title="Undo last move">
+                    ↶
+                  </UndoButton>
+                )}
               </MoveDetails>
 
               <MoveActions>

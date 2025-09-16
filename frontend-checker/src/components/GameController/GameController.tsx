@@ -335,6 +335,7 @@ export const GameController: React.FC<GameControllerProps> = () => {
         <MoveHistory
           moves={gameState.moveHistory}
           currentPlayer={gameState.currentPlayer}
+          undoMove={actions.undoMove}
         />
       </MainGameArea>
     </GameContainer>

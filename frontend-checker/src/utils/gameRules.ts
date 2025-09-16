@@ -202,6 +202,30 @@ export class GameRulesEngine {
     // Update board
     this.gameState.board = newBoard;
 
+    // Check if more jumps are available (for multiple jump sequences)
+    let isMultipleJump = false;
+    if (validation.isCapture && !validation.isKinging) {
+      const currentPiece = { ...move.piece, position: move.to };
+      const furtherJumpSequences = findJumpSequences(
+        this.gameState.board,
+        currentPiece,
+        move.to
+      );
+
+      // If there are more jumps available, this is part of a multiple jump sequence
+      if (furtherJumpSequences.length > 0) {
+        isMultipleJump = true;
+        // Set the current jumping piece to continue the sequence
+        this.gameState.currentJumpingPiece = currentPiece;
+      }
+    }
+
+    // Update the move with the correct isMultipleJump value
+    updatedMove = {
+      ...updatedMove,
+      isMultipleJump,
+    };
+
     // Add to move history with updated piece information
     this.addMoveToHistory(updatedMove);
 
@@ -215,21 +239,9 @@ export class GameRulesEngine {
       return true;
     }
 
-    // Check if more jumps are available (for multiple jump sequences)
-    if (validation.isCapture && !validation.isKinging) {
-      const currentPiece = { ...move.piece, position: move.to };
-      const furtherJumpSequences = findJumpSequences(
-        this.gameState.board,
-        currentPiece,
-        move.to
-      );
-
-      // If there are more jumps available, don't switch turns
-      if (furtherJumpSequences.length > 0) {
-        // Set the current jumping piece to continue the sequence
-        this.gameState.currentJumpingPiece = currentPiece;
-        return true; // Don't switch turns
-      }
+    // If this is part of a multiple jump sequence, don't switch turns
+    if (isMultipleJump) {
+      return true; // Don't switch turns
     }
 
     // Clear the current jumping piece and switch turns

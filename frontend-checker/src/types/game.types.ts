@@ -136,7 +136,8 @@ export type GameAction =
   | { type: 'UPDATE_STATS'; stats: Partial<GameStats> }
   | { type: 'HIGHLIGHT_MOVES'; positions: Position[] }
   | { type: 'CLEAR_HIGHLIGHTS' }
-  | { type: 'LOAD_SAVED_GAME'; savedState: Partial<GameState> };
+  | { type: 'LOAD_SAVED_GAME'; savedState: Partial<GameState> }
+  | { type: 'UNDO_MOVE' };
 
 // Hook return types
 export interface UseGameStateReturn {
