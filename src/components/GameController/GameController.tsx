@@ -192,13 +192,13 @@ const GameButton = styled.button`
   background-color: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.textLight};
   border: none;
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
-  border-radius: ${({ theme }) => theme.borderRadius.sm};
-  font-size: 0.8rem;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: ${({ theme }) => theme.transitions.fast};
-  min-width: 100px;
+  min-width: 120px;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.secondary};
