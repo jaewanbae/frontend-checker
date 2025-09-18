@@ -23,19 +23,6 @@ const sharedTheme = {
     normal: '0.3s ease-in-out',
     slow: '0.5s ease-in-out',
   },
-
-  breakpoints: {
-    mobile: '480px',
-    tablet: '768px',
-    desktop: '1024px',
-    wide: '1200px',
-  },
-
-  zIndex: {
-    dropdown: 1000,
-    modal: 1050,
-    tooltip: 1100,
-  },
 };
 
 // Light theme colors

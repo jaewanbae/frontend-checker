@@ -2,11 +2,6 @@
 export const GAME_CONFIG = {
   BOARD_SIZE: 8,
   PIECES_PER_PLAYER: 12,
-  LIGHT_PIECE_ROWS: 3, // Top 3 rows for light pieces
-  DARK_PIECE_ROWS: 3, // Bottom 3 rows for dark pieces
-  BOARD_WIDTH: 800,
-  BOARD_HEIGHT: 800,
-  MAX_WIDTH: 800,
   // Responsive sizing
   MIN_BOARD_SIZE: 400,
   MAX_BOARD_SIZE: 1000,

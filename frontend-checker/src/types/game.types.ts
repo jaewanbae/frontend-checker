@@ -154,7 +154,6 @@ export interface UseGameStateReturn {
 }
 
 // Utility types
-export type Direction = 'up-left' | 'up-right' | 'down-left' | 'down-right';
 export type ValidationResult = {
   isValid: boolean;
   reason?: string;
@@ -218,17 +217,6 @@ declare module 'styled-components' {
       fast: string;
       normal: string;
       slow: string;
-    };
-    breakpoints: {
-      mobile: string;
-      tablet: string;
-      desktop: string;
-      wide: string;
-    };
-    zIndex: {
-      dropdown: number;
-      modal: number;
-      tooltip: number;
     };
   }
 }

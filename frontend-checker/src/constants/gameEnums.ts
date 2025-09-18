@@ -39,16 +39,3 @@ export enum GameActionType {
   HIGHLIGHT_MOVES = 'HIGHLIGHT_MOVES',
   CLEAR_HIGHLIGHTS = 'CLEAR_HIGHLIGHTS',
 }
-
-export enum Direction {
-  UP_LEFT = 'up-left',
-  UP_RIGHT = 'up-right',
-  DOWN_LEFT = 'down-left',
-  DOWN_RIGHT = 'down-right',
-}
-
-export enum AIDifficulty {
-  EASY = 'easy',
-  MEDIUM = 'medium',
-  HARD = 'hard',
-}
