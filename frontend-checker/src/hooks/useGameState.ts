@@ -6,6 +6,7 @@ import {
   Piece,
   Move,
   Position,
+  Board,
 } from '../types/game.types';
 import { GAME_CONFIG, GAME_STATE } from '../constants/gameConstants';
 import { PieceColor, GameStatus, GameResult } from '../constants/gameEnums';
@@ -259,82 +260,179 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
 
       // Determine how many moves to undo
       let movesToUndo = 1;
-      if (lastMoveWasByAI && state.moveHistory.length >= 2) {
+
+      // Check if the last move is part of a sequential jump sequence
+      if (lastMove.isMultipleJump) {
+        // Count how many consecutive moves in the history are part of the same sequential jump
+        // by the same player (same piece ID)
+        const lastPieceId = lastMove.piece.id;
+        let sequentialMoves = 0;
+
+        for (let i = state.moveHistory.length - 1; i >= 0; i--) {
+          const move = state.moveHistory[i];
+          if (move.piece.id === lastPieceId && move.isMultipleJump) {
+            sequentialMoves++;
+          } else {
+            break;
+          }
+        }
+
+        // Undo the entire sequential jump sequence
+        movesToUndo = sequentialMoves;
+      } else if (lastMoveWasByAI && state.moveHistory.length >= 2) {
         // In AI vs Human mode, if the last move was by AI, undo both AI and human moves
         movesToUndo = 2;
       }
 
-      // Create a new board state by reversing the moves
-      let newBoard = { ...state.board };
+      // For sequential jumps, we need to restore the board to the state before the sequence started
+      // rather than trying to reverse each individual move
+      let newBoard: Board;
       let newPlayers = { ...state.players };
       let newStats = { ...state.stats };
       let newMoveHistory = [...state.moveHistory];
 
-      // Undo the specified number of moves
-      for (let i = 0; i < movesToUndo; i++) {
-        if (newMoveHistory.length === 0) break;
+      if (lastMove.isMultipleJump && movesToUndo > 1) {
+        // For sequential jumps, find the first move in the sequence and restore from there
+        const firstMoveInSequence =
+          newMoveHistory[newMoveHistory.length - movesToUndo];
 
-        const moveToUndo = newMoveHistory[newMoveHistory.length - 1];
+        // Start with the board state before the first move
+        newBoard = { ...state.board };
 
-        // Move the piece back to its original position
-        const pieceToMoveBack = {
-          ...moveToUndo.piece,
-          position: moveToUndo.from,
+        // Restore the piece to its original position (before the entire sequence)
+        const originalPiece = {
+          ...firstMoveInSequence.piece,
+          position: firstMoveInSequence.from,
         };
-        newBoard = setPieceAt(newBoard, moveToUndo.to, null);
-        newBoard = setPieceAt(newBoard, moveToUndo.from, pieceToMoveBack);
 
-        // If there was a captured piece, restore it
-        if (moveToUndo.capturedPiece) {
-          newBoard = setPieceAt(
-            newBoard,
-            moveToUndo.capturedPiece.position,
-            moveToUndo.capturedPiece
-          );
+        // Clear the final position and restore the original position
+        const finalMove = newMoveHistory[newMoveHistory.length - 1];
+        newBoard = setPieceAt(newBoard, finalMove.to, null);
+        newBoard = setPieceAt(
+          newBoard,
+          firstMoveInSequence.from,
+          originalPiece
+        );
+
+        // Restore all captured pieces from the entire sequence
+        let totalCaptures = 0;
+        for (
+          let i = newMoveHistory.length - movesToUndo;
+          i < newMoveHistory.length;
+          i++
+        ) {
+          const move = newMoveHistory[i];
+          if (move.capturedPiece) {
+            newBoard = setPieceAt(
+              newBoard,
+              move.capturedPiece.position,
+              move.capturedPiece
+            );
+            totalCaptures++;
+          }
         }
 
-        // If the piece was kinged, revert it back to a regular piece
-        if (moveToUndo.isKinging) {
-          const revertedPiece = { ...pieceToMoveBack, isKing: false };
-          newBoard = setPieceAt(newBoard, moveToUndo.from, revertedPiece);
-        }
-
-        // Update capture counts
+        // Update capture counts for the entire sequence
         const capturingPlayer =
-          moveToUndo.piece.color === PieceColor.LIGHT ? 'light' : 'dark';
+          firstMoveInSequence.piece.color === PieceColor.LIGHT
+            ? 'light'
+            : 'dark';
         const capturedPlayer =
-          moveToUndo.piece.color === PieceColor.LIGHT ? 'dark' : 'light';
+          firstMoveInSequence.piece.color === PieceColor.LIGHT
+            ? 'dark'
+            : 'light';
 
-        if (moveToUndo.capturedPiece) {
-          newPlayers[capturingPlayer].captures = Math.max(
-            0,
-            newPlayers[capturingPlayer].captures - 1
-          );
-          newPlayers[capturedPlayer].piecesRemaining = Math.min(
-            GAME_CONFIG.PIECES_PER_PLAYER,
-            newPlayers[capturedPlayer].piecesRemaining + 1
-          );
+        newPlayers[capturingPlayer].captures = Math.max(
+          0,
+          newPlayers[capturingPlayer].captures - totalCaptures
+        );
+        newPlayers[capturedPlayer].piecesRemaining = Math.min(
+          GAME_CONFIG.PIECES_PER_PLAYER,
+          newPlayers[capturedPlayer].piecesRemaining + totalCaptures
+        );
+
+        // Update stats for the entire sequence
+        newStats.moveCount = Math.max(0, newStats.moveCount - 1); // Sequential jumps count as 1 move
+        newStats.captures[capturingPlayer] = Math.max(
+          0,
+          newStats.captures[capturingPlayer] - totalCaptures
+        );
+
+        // Remove all moves in the sequence from history
+        newMoveHistory = newMoveHistory.slice(0, -movesToUndo);
+      } else {
+        // For single moves or AI+human moves, use the original logic
+        newBoard = { ...state.board };
+
+        // Undo the specified number of moves
+        for (let i = 0; i < movesToUndo; i++) {
+          if (newMoveHistory.length === 0) break;
+
+          const moveToUndo = newMoveHistory[newMoveHistory.length - 1];
+
+          // Move the piece back to its original position
+          const pieceToMoveBack = {
+            ...moveToUndo.piece,
+            position: moveToUndo.from,
+          };
+          newBoard = setPieceAt(newBoard, moveToUndo.to, null);
+          newBoard = setPieceAt(newBoard, moveToUndo.from, pieceToMoveBack);
+
+          // If there was a captured piece, restore it
+          if (moveToUndo.capturedPiece) {
+            newBoard = setPieceAt(
+              newBoard,
+              moveToUndo.capturedPiece.position,
+              moveToUndo.capturedPiece
+            );
+          }
+
+          // If the piece was kinged, revert it back to a regular piece
+          if (moveToUndo.isKinging) {
+            const revertedPiece = { ...pieceToMoveBack, isKing: false };
+            newBoard = setPieceAt(newBoard, moveToUndo.from, revertedPiece);
+          }
+
+          // Update capture counts
+          const capturingPlayer =
+            moveToUndo.piece.color === PieceColor.LIGHT ? 'light' : 'dark';
+          const capturedPlayer =
+            moveToUndo.piece.color === PieceColor.LIGHT ? 'dark' : 'light';
+
+          if (moveToUndo.capturedPiece) {
+            newPlayers[capturingPlayer].captures = Math.max(
+              0,
+              newPlayers[capturingPlayer].captures - 1
+            );
+            newPlayers[capturedPlayer].piecesRemaining = Math.min(
+              GAME_CONFIG.PIECES_PER_PLAYER,
+              newPlayers[capturedPlayer].piecesRemaining + 1
+            );
+          }
+
+          // Update stats
+          newStats.moveCount = Math.max(0, newStats.moveCount - 1);
+          if (moveToUndo.capturedPiece) {
+            newStats.captures[capturingPlayer] = Math.max(
+              0,
+              newStats.captures[capturingPlayer] - 1
+            );
+          }
+
+          // Remove the move from history
+          newMoveHistory = newMoveHistory.slice(0, -1);
         }
-
-        // Update stats
-        newStats.moveCount = Math.max(0, newStats.moveCount - 1);
-        if (moveToUndo.capturedPiece) {
-          newStats.captures[capturingPlayer] = Math.max(
-            0,
-            newStats.captures[capturingPlayer] - 1
-          );
-        }
-
-        // Remove the move from history
-        newMoveHistory = newMoveHistory.slice(0, -1);
       }
 
       // Determine the current player after undo
-      // If we undid multiple moves, we want to go back to the human player's turn
       let currentPlayer: PieceColor;
       if (lastMoveWasByAI && movesToUndo === 2) {
         // After undoing AI + human moves, it should be the human's turn again
         currentPlayer = PieceColor.LIGHT; // Human is always light player
+      } else if (lastMove.isMultipleJump && movesToUndo > 1) {
+        // After undoing a sequential jump sequence, it should be the same player's turn
+        // (since sequential jumps don't change turns)
+        currentPlayer = lastMove.piece.color;
       } else {
         // Normal undo - go back to the player who made the move we undid
         currentPlayer = lastMove.piece.color;
@@ -450,12 +548,12 @@ export const useGameState = () => {
             const aiMove = aiRef.current!.getBestMove();
 
             if (aiMove) {
-              // Execute the move directly on the engine
-              moveExecuted = engine.executeMove(aiMove);
+              // Execute the specific move on the AI's engine
+              moveExecuted = aiRef.current!.executeMove(aiMove);
 
               if (moveExecuted) {
-                // Get the updated game state from the engine
-                const newGameState = engine.getGameState();
+                // Get the updated game state from the AI's engine
+                const newGameState = aiRef.current!.getGameState();
 
                 // Dispatch the AI move
                 dispatch({
@@ -472,9 +570,6 @@ export const useGameState = () => {
                   });
                   break;
                 }
-
-                // Update the AI's engine with the new state
-                aiRef.current!.updateGameEngine(engine);
 
                 // Check if there are more jumps available (sequential jump)
                 if (newGameState.currentJumpingPiece) {

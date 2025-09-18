@@ -99,6 +99,15 @@ export class CheckersAI {
   }
 
   /**
+   * Execute a specific move
+   * @param move The move to execute
+   * @returns true if move was successful, false otherwise
+   */
+  executeMove(move: Move): boolean {
+    return this.gameEngine.executeMove(move);
+  }
+
+  /**
    * Check if it's the AI's turn
    */
   isAITurn(): boolean {
@@ -117,6 +126,13 @@ export class CheckersAI {
    */
   updateGameEngine(gameEngine: GameRulesEngine): void {
     this.gameEngine = gameEngine;
+  }
+
+  /**
+   * Get the current game state from the AI's engine
+   */
+  getGameState(): GameState {
+    return this.gameEngine.getGameState();
   }
 }
 
@@ -137,17 +153,29 @@ export function getSequentialJumpMoves(
   gameState: GameState,
   playerColor: PieceColor
 ): Move[] {
-  const validMoves = getValidMovesForPlayer(gameState.board, playerColor);
+  const validMoves = getValidMovesForPlayer(
+    gameState.board,
+    playerColor,
+    gameState.currentJumpingPiece
+  );
 
   return validMoves.filter(move => {
     if (!move.isCapture) return false;
 
-    // Check if this move can lead to more jumps
+    // Check if this move is already identified as a multiple jump
+    if (move.isMultipleJump) {
+      return true;
+    }
+
+    // For single capture moves, check if they can lead to more jumps
+    // by simulating the first jump and seeing if more jumps are possible
     const jumpSequences = findJumpSequences(
       gameState.board,
       move.piece,
-      move.to
+      move.piece.position
     );
+
+    // A sequential jump is one that has a sequence longer than 1
     return jumpSequences.some(sequence => sequence.length > 1);
   });
 }

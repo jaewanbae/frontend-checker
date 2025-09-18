@@ -152,9 +152,28 @@ export const getValidMovesForPlayer = (
         if (currentJumpingPiece && piece.id !== currentJumpingPiece.id) {
           continue;
         }
-        // Get basic moves
+
+        // First, get all jump sequences for this piece
+        const jumpSequences = findJumpSequences(board, piece, piece.position);
+        const sequencePositions = new Set<string>();
+
+        // Track all positions that are part of jump sequences
+        for (const sequence of jumpSequences) {
+          for (const position of sequence) {
+            sequencePositions.add(`${position.row},${position.col}`);
+          }
+        }
+
+        // Get basic moves (excluding those that are part of sequences)
         const positions = getValidMovesForPiece(board, piece);
         for (const position of positions) {
+          const positionKey = `${position.row},${position.col}`;
+
+          // Skip if this position is part of a jump sequence
+          if (sequencePositions.has(positionKey)) {
+            continue;
+          }
+
           const validation = validateMove(
             board,
             piece,
@@ -180,33 +199,30 @@ export const getValidMovesForPlayer = (
           }
         }
 
-        // Get multiple jump sequences
-        const jumpSequences = findJumpSequences(board, piece, piece.position);
-
+        // Add jump sequences
         for (const sequence of jumpSequences) {
           if (sequence.length > 0) {
-            const finalPosition = sequence[sequence.length - 1];
+            // For sequential jumps, we only create a move for the FIRST jump
+            // The game engine will handle continuing the sequence
+            const firstJumpPosition = sequence[0];
 
-            // For multiple jump sequences, we need to validate the first jump
-            // The complete sequence validation will be done during execution
+            // Validate the first jump
             const firstJumpValidation = validateMove(
               board,
               piece,
               piece.position,
-              sequence[0]
+              firstJumpPosition
             );
 
             if (firstJumpValidation.isValid && firstJumpValidation.isCapture) {
-              // Check if this piece can be kinged at the final position
-              const finalPiece = { ...piece, position: finalPosition };
-              const isKinging = canPromoteToKing(finalPiece, finalPosition);
-
+              // For sequential jumps, we don't know if kinging will occur until the sequence is complete
+              // So we set isKinging to false here - it will be updated during execution
               const move = {
                 from: piece.position,
-                to: finalPosition,
+                to: firstJumpPosition, // Only the first jump position
                 piece,
-                capturedPiece: firstJumpValidation.capturedPiece, // First captured piece
-                isKinging: isKinging,
+                capturedPiece: firstJumpValidation.capturedPiece,
+                isKinging: false, // Will be determined during execution
                 isCapture: true,
                 isMultipleJump: sequence.length > 1,
               };

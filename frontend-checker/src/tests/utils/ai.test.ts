@@ -21,12 +21,29 @@ import {
 } from '../../constants/gameEnums';
 import { BOARD_LAYOUT } from '../../constants/gameConstants';
 
+// Mock localStorage to prevent test isolation issues
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
+
 describe('CheckersAI', () => {
   let gameState: GameState;
   let engine: GameRulesEngine;
   let ai: CheckersAI;
 
   beforeEach(() => {
+    // Clear localStorage mock between tests
+    localStorageMock.getItem.mockReturnValue(null);
+    localStorageMock.setItem.mockClear();
+    localStorageMock.removeItem.mockClear();
+    localStorageMock.clear.mockClear();
     gameState = {
       board: initializeBoard(),
       currentPlayer: PieceColor.LIGHT,
@@ -189,6 +206,8 @@ describe('CheckersAI', () => {
         size: 8,
       };
 
+      // Dark piece at (5,5) - can capture light piece at (4,4) by jumping to (3,3)
+      // From (3,3), it can then capture light piece at (2,2) by jumping to (1,1)
       const darkPiece: Piece = {
         id: 'dark-piece',
         color: PieceColor.DARK,
@@ -197,6 +216,7 @@ describe('CheckersAI', () => {
         isKing: false,
       };
 
+      // First light piece to be captured
       const lightPiece1: Piece = {
         id: 'light-piece-1',
         color: PieceColor.LIGHT,
@@ -205,6 +225,8 @@ describe('CheckersAI', () => {
         isKing: false,
       };
 
+      // Second light piece to be captured in the sequence
+      // After first jump to (3,3), this piece should be at (2,2) for the second capture
       const lightPiece2: Piece = {
         id: 'light-piece-2',
         color: PieceColor.LIGHT,
