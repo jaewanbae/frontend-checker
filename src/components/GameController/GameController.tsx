@@ -19,13 +19,22 @@ const GameContainer = styled.div`
   align-items: center;
   gap: ${UI_CONFIG.GAP_MEDIUM};
   padding: ${UI_CONFIG.GAP_MEDIUM};
-  height: 100vh;
-  max-height: 100vh;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
   background-color: ${({ theme }) => theme.colors.background};
   width: 100%;
   max-width: 100vw;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
+
+  /* Mobile-specific adjustments */
+  ${({ theme }) => theme.responsive.mobile} {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: ${({ theme }) => theme.spacing.xs};
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
 
   ${({ theme }) => theme.responsive.desktop} {
     gap: ${UI_CONFIG.GAP_SMALL};
@@ -62,6 +71,14 @@ const MainGameArea = styled.div`
   max-width: 1400px;
   flex: 1;
   overflow: hidden;
+
+  /* Mobile-specific adjustments */
+  ${({ theme }) => theme.responsive.mobile} {
+    flex-direction: column;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.sm};
+    overflow: visible;
+  }
 
   ${({ theme }) => theme.responsive.desktop} {
     flex-direction: column;
@@ -167,6 +184,15 @@ const GameInfo = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.md};
   box-shadow: ${({ theme }) => theme.shadows.sm};
   font-size: 0.8rem;
+
+  /* Mobile-specific adjustments */
+  ${({ theme }) => theme.responsive.mobile} {
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.sm};
+    max-width: 70%;
+
+    padding: ${({ theme }) => theme.spacing.sm};
+  }
 `;
 
 const GameControls = styled.div`
@@ -186,6 +212,13 @@ const PlayerInfo = styled.div<{ isActive: boolean }>`
   min-width: 100px;
   text-align: center;
   font-size: 0.8rem;
+
+  /* Mobile-specific adjustments */
+  ${({ theme }) => theme.responsive.mobile} {
+    min-width: auto;
+    width: 100%;
+    padding: ${({ theme }) => theme.spacing.sm};
+  }
 `;
 
 const GameButton = styled.button`
@@ -222,6 +255,13 @@ const ControlsRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
   align-items: center;
+
+  /* Mobile-specific adjustments */
+  ${({ theme }) => theme.responsive.mobile} {
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.sm};
+    width: 100%;
+  }
 `;
 
 export const GameController: React.FC = () => {

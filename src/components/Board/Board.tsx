@@ -7,6 +7,13 @@ const BoardWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xs};
+  width: 100%;
+  padding: 0 ${({ theme }) => theme.spacing.sm};
+
+  /* Mobile-specific adjustments */
+  ${({ theme }) => theme.responsive.mobile} {
+    padding: 0 ${({ theme }) => theme.spacing.md};
+  }
 `;
 
 const BoardWithLabels = styled.div`
@@ -17,6 +24,16 @@ const BoardWithLabels = styled.div`
   height: min(60vw, 50vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
   min-width: ${GAME_CONFIG.MIN_BOARD_SIZE + 100}px;
   min-height: ${GAME_CONFIG.MIN_BOARD_SIZE + 100}px;
+
+  /* Mobile-specific sizing to prevent cutoff */
+  ${({ theme }) => theme.responsive.mobile} {
+    width: min(80vw, 45vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
+    height: min(80vw, 45vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
+    max-width: calc(100vw - ${({ theme }) => theme.spacing.xl});
+    max-height: calc(100vh - 250px); /* Leave more space for UI elements */
+    min-width: ${GAME_CONFIG.MIN_BOARD_SIZE}px;
+    min-height: ${GAME_CONFIG.MIN_BOARD_SIZE}px;
+  }
   border-radius: ${({ theme }) => theme.borderRadius.md};
   overflow: hidden;
   background-color: ${({ theme }) => theme.colors.background};

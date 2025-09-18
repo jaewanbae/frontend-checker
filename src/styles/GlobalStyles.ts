@@ -11,6 +11,10 @@ export const GlobalStyles = createGlobalStyle<{ theme: Theme }>`
   html {
     font-size: 16px;
     line-height: 1.5;
+    /* Mobile viewport fixes */
+    height: 100%;
+    height: 100dvh; /* Dynamic viewport height */
+    overflow-x: hidden;
   }
 
   body {
@@ -22,6 +26,12 @@ export const GlobalStyles = createGlobalStyle<{ theme: Theme }>`
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.textPrimary};
     transition: background-color 0.3s ease, color 0.3s ease;
+    /* Mobile viewport fixes */
+    height: 100%;
+    height: 100dvh; /* Dynamic viewport height */
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 
   code {
@@ -31,8 +41,10 @@ export const GlobalStyles = createGlobalStyle<{ theme: Theme }>`
 
   #root {
     min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
   }
 
   /* Reset button styles */
