@@ -1,46 +1,155 @@
-# Getting Started with Create React App
+# Checkers Game
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, interactive checkers game built with React, TypeScript, and styled-components. Features drag-and-drop gameplay, AI opponent, dark/light theme, and comprehensive game logic.
 
-## Available Scripts
+## 🚀 Quick Start
 
-In the project directory, you can run:
+### Prerequisites
+
+- Node.js (version 14 or higher)
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd frontend-checker
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**
+
+   ```bash
+   npm start
+   ```
+
+4. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🎮 How to Play
+
+### Game Modes
+
+- **Human vs Human**: Two players take turns on the same device
+- **Human vs AI**: Play against an intelligent AI opponent
+
+### Controls
+
+- **Drag and Drop**: Click and drag pieces to move them
+- **Click to Move**: Click a piece, then click a valid destination
+- **Undo**: Use the undo button to reverse moves
+- **AI Toggle**: Switch between game modes during play
+
+### Game Rules
+
+- Light pieces (top) move first
+- Pieces move diagonally forward
+- Capture opponent pieces by jumping over them
+- Mandatory capture rule: must capture if possible
+- Sequential jumps: continue capturing in the same turn
+- King pieces can move in any diagonal direction
+- Win by capturing all opponent pieces or blocking all moves
+
+## 🛠️ Available Scripts
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
 
 ### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Launches the test runner in interactive watch mode
+
+- Run all tests: `npm test`
+- Run specific test: `npm test -- --testNamePattern="test name"`
+- Run tests once: `npm test -- --watchAll=false`
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Builds the app for production to the `build` folder
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Optimized and minified for deployment
+- Ready for hosting on any static file server
 
 ### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+**⚠️ One-way operation - cannot be undone!**
+Ejects from Create React App to get full control over build configuration
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🏗️ Project Structure
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```
+src/
+├── components/          # React components
+│   ├── Board/          # Game board component
+│   ├── GameController/ # Main game controller
+│   ├── Piece/          # Individual piece component
+│   ├── Square/         # Board square component
+│   └── UI/             # UI components (MoveHistory, AIToggle)
+├── constants/          # Game constants and enums
+├── hooks/              # Custom React hooks
+├── styles/             # Styling and theme
+├── tests/              # Test files
+├── types/              # TypeScript type definitions
+└── utils/              # Game logic utilities
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## 🧪 Testing
 
-## Learn More
+The project includes comprehensive tests:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- **Unit Tests**: Game logic, move validation, AI behavior
+- **Integration Tests**: Complete game flows
+- **Component Tests**: React component behavior
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Run tests with:
+
+```bash
+npm test
+```
+
+## 🎨 Features
+
+- ✅ **Drag & Drop Interface**: Intuitive piece movement
+- ✅ **AI Opponent**: Smart AI with capture prioritization
+- ✅ **Dark/Light Theme**: Toggle between themes
+- ✅ **Move History**: Track and undo moves
+- ✅ **Game Statistics**: Capture counts and move tracking
+- ✅ **Responsive Design**: Works on desktop and mobile
+- ✅ **TypeScript**: Full type safety
+- ✅ **Comprehensive Testing**: 160+ test cases
+
+## 🔧 Technical Details
+
+- **Framework**: React 18 with TypeScript
+- **Styling**: Styled-components with theme system
+- **Drag & Drop**: @atlaskit/pragmatic-drag-and-drop
+- **Testing**: Jest + React Testing Library
+- **Build Tool**: Create React App
+
+## 📱 Browser Support
+
+- Chrome (recommended)
+- Firefox
+- Safari
+- Edge
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Run the test suite
+6. Submit a pull request
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).

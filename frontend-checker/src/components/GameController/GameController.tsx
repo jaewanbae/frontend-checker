@@ -363,8 +363,8 @@ export const GameController: React.FC = () => {
               disabled={false} /* Allow toggling before and during games */
             />
             <ThemeToggle showLabel={true} />
+            {renderGameButton()}
           </ControlsRow>
-          <div>{renderGameButton()}</div>
         </GameControls>
       </GameHeader>
 

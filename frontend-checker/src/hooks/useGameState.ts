@@ -92,6 +92,15 @@ const clearSavedGameState = (): void => {
 
 // Initial game state
 const createInitialGameState = (): GameState => {
+  // Check if there's a saved game state first
+  const savedState = loadGameState();
+  if (savedState && savedState.gameStatus === GameStatus.PLAYING) {
+    // Return the saved state to prevent jarring UI changes
+    // Cast to GameState since we know it's a complete saved state
+    return savedState as GameState;
+  }
+
+  // Otherwise, create a fresh initial state
   const savedStats = loadGameStats();
 
   return {
@@ -420,15 +429,6 @@ export const useGameState = () => {
       aiRef.current = null;
     }
   }, [gameState.gameMode, gameState.gameStatus]);
-
-  // Load saved game state on component mount
-  useEffect(() => {
-    const savedState = loadGameState();
-    if (savedState && savedState.gameStatus === GameStatus.PLAYING) {
-      // Restore the saved game state
-      dispatch({ type: 'LOAD_SAVED_GAME', savedState });
-    }
-  }, []);
 
   // Save game state whenever it changes (except for temporary states)
   useEffect(() => {
