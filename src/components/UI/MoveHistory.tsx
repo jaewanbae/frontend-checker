@@ -15,37 +15,12 @@ const MoveHistoryContainer = styled.div`
   flex-direction: column;
   width: 100%;
   max-width: 250px;
-  height: calc(${({ theme }) => theme.responsive.boardSize.base}, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px) + 80px);
+  height: calc(min(60vw, 50vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px) + 80px);
   min-height: calc(${GAME_CONFIG.MIN_BOARD_SIZE + 100}px + 80px);
   background-color: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
   overflow: hidden;
-
-  /* Responsive sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height900} {
-    height: calc(${({ theme }) => theme.responsive.boardSize.height900} + ${({ theme }) => theme.spacing.sm});
-    max-width: 280px;
-  }
-
-  ${({ theme }) => theme.responsive.height800} {
-    height: calc(${({ theme }) => theme.responsive.boardSize.height800} + ${({ theme }) => theme.spacing.sm});
-    max-width: 260px;
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    height: calc(${({ theme }) => theme.responsive.boardSize.height700} + ${({ theme }) => theme.spacing.xs});
-    max-width: 240px;
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    height: calc(${({ theme }) => theme.responsive.boardSize.height600} + ${({ theme }) => theme.spacing.xs});
-    max-width: 220px;
-  }
-
-  ${({ theme }) => theme.responsive.desktop} {
-    max-width: 250px;
-  }
 
   ${({ theme }) => theme.responsive.tablet} {
     max-width: 200px;
@@ -61,22 +36,6 @@ const MoveHistoryHeader = styled.div`
   font-weight: 600;
   font-size: 0.9rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.textSecondary};
-
-  /* Responsive header sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    padding: ${({ theme }) => theme.spacing.sm};
-    font-size: 1rem;
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    padding: ${({ theme }) => theme.spacing.xs};
-    font-size: 0.9rem;
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    padding: ${({ theme }) => theme.spacing.xs};
-    font-size: 0.8rem;
-  }
 `;
 
 const MovesList = styled.div`
@@ -87,22 +46,6 @@ const MovesList = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
   scroll-behavior: smooth;
-
-  /* Responsive moves list sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    padding: ${({ theme }) => theme.spacing.sm};
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    padding: ${({ theme }) => theme.spacing.xs};
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    padding: ${({ theme }) => theme.spacing.xs};
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
 `;
 
 const MoveItem = styled.div<{ isCurrentPlayer: boolean }>`
@@ -117,22 +60,6 @@ const MoveItem = styled.div<{ isCurrentPlayer: boolean }>`
       isCurrentPlayer ? theme.colors.primary : theme.colors.textSecondary};
   transition: ${({ theme }) => theme.transitions.fast};
   margin-bottom: ${({ theme }) => theme.spacing.xs};
-
-  /* Responsive move item sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    padding: ${({ theme }) => theme.spacing.sm};
-    margin-bottom: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    padding: ${({ theme }) => theme.spacing.xs};
-    margin-bottom: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    padding: ${({ theme }) => theme.spacing.xs};
-    margin-bottom: ${({ theme }) => theme.spacing.xs};
-  }
 `;
 
 const MoveHeader = styled.div`
@@ -140,57 +67,18 @@ const MoveHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.xs};
-
-  /* Responsive move header sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    margin-bottom: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    margin-bottom: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    margin-bottom: ${({ theme }) => theme.spacing.xs};
-  }
 `;
 
 const PlayerName = styled.span<{ color: PieceColor }>`
   font-weight: 600;
   color: ${({ color, theme }) =>
     color === PieceColor.LIGHT ? theme.colors.primary : theme.colors.danger};
-
-  /* Responsive player name sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    font-size: 0.9rem;
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    font-size: 0.8rem;
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    font-size: 0.7rem;
-  }
 `;
 
 const MoveNumber = styled.span`
   font-size: 0.9rem;
   color: ${({ theme }) => theme.colors.textPrimary};
   font-weight: 500;
-
-  /* Responsive move number sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    font-size: 0.8rem;
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    font-size: 0.7rem;
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    font-size: 0.6rem;
-  }
 `;
 
 const MoveDetails = styled.div`
@@ -198,19 +86,6 @@ const MoveDetails = styled.div`
   flex-direction: row;
   gap: ${({ theme }) => theme.spacing.sm};
   align-items: center;
-
-  /* Responsive move details sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
 `;
 
 const LocationValue = styled.span`
@@ -219,22 +94,6 @@ const LocationValue = styled.span`
   padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.xs};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   border: 1px solid ${({ theme }) => theme.colors.textSecondary};
-
-  /* Responsive location value sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    padding: 1px ${({ theme }) => theme.spacing.sm};
-    font-size: 0.8rem;
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    padding: 1px ${({ theme }) => theme.spacing.xs};
-    font-size: 0.7rem;
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    padding: 1px ${({ theme }) => theme.spacing.xs};
-    font-size: 0.6rem;
-  }
 `;
 
 const MoveActions = styled.div`

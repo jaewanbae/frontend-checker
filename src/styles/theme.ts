@@ -1,54 +1,15 @@
-// Responsive breakpoints
+// Simple responsive breakpoints
 export const breakpoints = {
   mobile: '480px',
   tablet: '768px',
   desktop: '1024px',
-  largeDesktop: '1440px',
-  // Height-based breakpoints for small screens
-  height900: '900px',
-  height800: '800px',
-  height700: '700px',
-  height600: '600px',
 } as const;
 
-// Responsive utility functions
+// Simple responsive utilities
 export const responsive = {
-  // Media query helpers
   mobile: `@media (max-width: ${breakpoints.mobile})`,
   tablet: `@media (max-width: ${breakpoints.tablet})`,
   desktop: `@media (max-width: ${breakpoints.desktop})`,
-  largeDesktop: `@media (max-width: ${breakpoints.largeDesktop})`,
-
-  // Height-based media queries
-  height900: `@media (max-height: ${breakpoints.height900})`,
-  height800: `@media (max-height: ${breakpoints.height800})`,
-  height700: `@media (max-height: ${breakpoints.height700})`,
-  height600: `@media (max-height: ${breakpoints.height600})`,
-
-  // Responsive sizing helpers
-  boardSize: {
-    base: 'min(60vw, 50vh)',
-    height900: 'min(65vw, 45vh, 500px)',
-    height800: 'min(70vw, 40vh, 450px)',
-    height700: 'min(75vw, 35vh, 400px)',
-    height600: 'min(80vw, 30vh, 350px)',
-  },
-
-  // Responsive font size helpers
-  fontSize: {
-    base: '1rem',
-    height800: '0.9rem',
-    height700: '0.8rem',
-    height600: '0.7rem',
-  },
-
-  // Responsive padding helpers
-  padding: {
-    base: '16px',
-    height800: '8px',
-    height700: '4px',
-    height600: '2px',
-  },
 };
 
 // Shared theme properties

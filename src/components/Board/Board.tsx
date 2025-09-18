@@ -39,33 +39,6 @@ const BoardWithLabels = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   padding: ${({ theme }) => theme.spacing.sm};
   gap: ${({ theme }) => theme.spacing.xs};
-
-  /* Responsive sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height900} {
-    width: min(${({ theme }) => theme.responsive.boardSize.height900});
-    height: min(${({ theme }) => theme.responsive.boardSize.height900});
-  }
-
-  ${({ theme }) => theme.responsive.height800} {
-    width: min(${({ theme }) => theme.responsive.boardSize.height800});
-    height: min(${({ theme }) => theme.responsive.boardSize.height800});
-    padding: ${({ theme }) => theme.spacing.sm};
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    width: min(${({ theme }) => theme.responsive.boardSize.height700});
-    height: min(${({ theme }) => theme.responsive.boardSize.height700});
-    padding: ${({ theme }) => theme.spacing.xs};
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    width: min(${({ theme }) => theme.responsive.boardSize.height600});
-    height: min(${({ theme }) => theme.responsive.boardSize.height600});
-    padding: ${({ theme }) => theme.spacing.xs};
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
 `;
 
 const BoardContainer = styled.div`
@@ -91,19 +64,6 @@ const Label = styled.div<{ isColumn?: boolean }>`
   color: ${({ theme }) => theme.colors.textSecondary};
   background-color: ${({ theme }) => theme.colors.background};
   user-select: none;
-
-  /* Responsive label sizing using theme utilities */
-  ${({ theme }) => theme.responsive.height800} {
-    font-size: 11px;
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    font-size: 10px;
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    font-size: 9px;
-  }
 
   ${({ isColumn }) =>
     isColumn

@@ -10,17 +10,17 @@ import { useGameState } from '../../hooks/useGameState';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 import { PieceColor, Move } from '../../types/game.types';
 import { GameStatus, GameMode } from '../../constants/gameEnums';
-import { GAME_CONFIG, UI_CONFIG, TEXT } from '../../constants/gameConstants';
+import { GAME_CONFIG, TEXT } from '../../constants/gameConstants';
 import { validateMove } from '../../utils/moveValidation';
 
 const GameContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${UI_CONFIG.GAP_MEDIUM};
-  padding: ${UI_CONFIG.GAP_MEDIUM};
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md};
   min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  min-height: 100dvh;
   background-color: ${({ theme }) => theme.colors.background};
   width: 100%;
   max-width: 100vw;
@@ -28,78 +28,25 @@ const GameContainer = styled.div`
   overflow-y: auto;
   box-sizing: border-box;
 
-  /* Mobile-specific adjustments */
   ${({ theme }) => theme.responsive.mobile} {
-    min-height: 100vh;
-    min-height: 100dvh;
     padding: ${({ theme }) => theme.spacing.xs};
     gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.desktop} {
-    gap: ${UI_CONFIG.GAP_SMALL};
-    padding: ${UI_CONFIG.GAP_SMALL};
-  }
-
-  ${({ theme }) => theme.responsive.height900} {
-    gap: ${({ theme }) => theme.spacing.sm};
-    padding: ${({ theme }) => theme.spacing.sm};
-  }
-
-  ${({ theme }) => theme.responsive.height800} {
-    gap: ${({ theme }) => theme.spacing.sm};
-    padding: ${({ theme }) => theme.spacing.sm};
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    gap: ${({ theme }) => theme.spacing.xs};
-    padding: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    gap: ${({ theme }) => theme.spacing.xs};
-    padding: ${({ theme }) => theme.spacing.xs};
   }
 `;
 
 const MainGameArea = styled.div`
   display: flex;
-  gap: ${UI_CONFIG.GAP_MEDIUM};
+  gap: ${({ theme }) => theme.spacing.md};
   align-items: flex-start;
   justify-content: center;
   width: 100%;
   max-width: 1400px;
   flex: 1;
-  overflow: hidden;
 
-  /* Mobile-specific adjustments */
   ${({ theme }) => theme.responsive.mobile} {
     flex-direction: column;
     align-items: center;
     gap: ${({ theme }) => theme.spacing.sm};
-    overflow: visible;
-  }
-
-  ${({ theme }) => theme.responsive.desktop} {
-    flex-direction: column;
-    align-items: center;
-    gap: ${UI_CONFIG.GAP_SMALL};
-  }
-
-  ${({ theme }) => theme.responsive.height900} {
-    gap: ${({ theme }) => theme.spacing.sm};
-  }
-
-  ${({ theme }) => theme.responsive.height800} {
-    gap: ${({ theme }) => theme.spacing.sm};
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    gap: ${({ theme }) => theme.spacing.xs};
   }
 `;
 
@@ -107,28 +54,8 @@ const GameBoardSection = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${UI_CONFIG.GAP_SMALL};
+  gap: ${({ theme }) => theme.spacing.sm};
   flex-shrink: 0;
-
-  ${({ theme }) => theme.responsive.desktop} {
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height900} {
-    gap: ${({ theme }) => theme.spacing.sm};
-  }
-
-  ${({ theme }) => theme.responsive.height800} {
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height700} {
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
-
-  ${({ theme }) => theme.responsive.height600} {
-    gap: ${({ theme }) => theme.spacing.xs};
-  }
 `;
 
 const GameHeader = styled.div`
@@ -143,33 +70,12 @@ const GameHeader = styled.div`
   h1 {
     font-size: 1.2rem;
     margin: 0;
-    ${({ theme }) => theme.responsive.height800} {
-      font-size: 1.1rem;
-    }
-
-    ${({ theme }) => theme.responsive.height700} {
-      font-size: 1rem;
-    }
-
-    ${({ theme }) => theme.responsive.height600} {
-      font-size: 0.9rem;
-    }
   }
 
   p {
     font-size: 0.8rem;
     margin: 0;
-    ${({ theme }) => theme.responsive.height800} {
-      font-size: 0.75rem;
-    }
-
-    ${({ theme }) => theme.responsive.height700} {
-      font-size: 0.7rem;
-    }
-
-    ${({ theme }) => theme.responsive.height600} {
-      font-size: 0.65rem;
-    }
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
 
