@@ -262,7 +262,6 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
       if (lastMoveWasByAI && state.moveHistory.length >= 2) {
         // In AI vs Human mode, if the last move was by AI, undo both AI and human moves
         movesToUndo = 2;
-        console.log('Multi-undo: Undoing both AI and human moves');
       }
 
       // Create a new board state by reversing the moves
@@ -401,10 +400,8 @@ export const useGameState = () => {
       // AI always plays as DARK (second player)
       const engine = createGameRulesEngine(gameState);
       aiRef.current = createCheckersAI(engine, PieceColor.DARK);
-      console.log('AI initialized for game mode:', gameState.gameMode);
     } else {
       aiRef.current = null;
-      console.log('AI cleared for game mode:', gameState.gameMode);
     }
   }, [gameState.gameMode, gameState.gameStatus]);
 
@@ -427,15 +424,6 @@ export const useGameState = () => {
 
   // AI move execution - trigger AI move after human move and turn switch
   useEffect(() => {
-    console.log('AI move effect triggered:', {
-      hasAI: !!aiRef.current,
-      gameMode: gameState.gameMode,
-      gameStatus: gameState.gameStatus,
-      currentPlayer: gameState.currentPlayer,
-      aiColor: aiRef.current?.getAIColor(),
-      isLoading,
-    });
-
     if (
       aiRef.current &&
       gameState.gameMode === 'human-vs-ai' &&
@@ -443,7 +431,6 @@ export const useGameState = () => {
       gameState.currentPlayer === aiRef.current.getAIColor() &&
       !isLoading
     ) {
-      console.log('AI move execution starting...');
       // Execute AI move after a short delay for better UX
       const aiMoveTimeout = setTimeout(() => {
         try {
@@ -491,12 +478,10 @@ export const useGameState = () => {
 
                 // Check if there are more jumps available (sequential jump)
                 if (newGameState.currentJumpingPiece) {
-                  console.log('AI continuing sequential jump...');
                   moveCount++;
                   // Continue the loop to make the next jump
                 } else {
                   // No more jumps, sequence is complete
-                  console.log('AI sequential jump sequence complete');
                   break;
                 }
               } else {

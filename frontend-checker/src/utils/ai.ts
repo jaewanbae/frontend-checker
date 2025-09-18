@@ -26,13 +26,6 @@ export class CheckersAI {
   getBestMove(): Move | null {
     const gameState = this.gameEngine.getGameState();
 
-    console.log('AI getBestMove called:', {
-      currentPlayer: gameState.currentPlayer,
-      aiColor: this.aiColor,
-      hasCurrentJumpingPiece: !!gameState.currentJumpingPiece,
-      currentJumpingPiecePosition: gameState.currentJumpingPiece?.position,
-    });
-
     // Always use the same move generation logic - getValidMovesForPlayer handles
     // both normal moves and sequential jump moves correctly
     const validMoves = getValidMovesForPlayer(
@@ -41,14 +34,7 @@ export class CheckersAI {
       gameState.currentJumpingPiece
     );
 
-    console.log('AI found valid moves:', {
-      total: validMoves.length,
-      captures: validMoves.filter(m => m.isCapture).length,
-      multipleJumps: validMoves.filter(m => m.isMultipleJump).length,
-    });
-
     if (validMoves.length === 0) {
-      console.log('AI: No valid moves found');
       return null;
     }
 
@@ -58,18 +44,15 @@ export class CheckersAI {
 
     // If there are capture moves, prioritize them
     if (captureMoves.length > 0) {
-      console.log('AI: Prioritizing capture moves');
       return this.selectBestCaptureMove(captureMoves, gameState);
     }
 
     // If no capture moves, select from regular moves
     if (regularMoves.length > 0) {
-      console.log('AI: Selecting from regular moves');
       return this.selectRandomMove(regularMoves);
     }
 
     // Fallback (shouldn't happen due to validation above)
-    console.log('AI: Using fallback move');
     return validMoves[0];
   }
 
@@ -86,15 +69,10 @@ export class CheckersAI {
 
     if (sequentialJumpMoves.length > 0) {
       // Prioritize sequential jumps
-      console.log(
-        'AI found sequential jump moves:',
-        sequentialJumpMoves.length
-      );
       return this.selectRandomMove(sequentialJumpMoves);
     }
 
     // If no sequential jumps, select from single capture moves
-    console.log('AI selecting from single capture moves:', captureMoves.length);
     return this.selectRandomMove(captureMoves);
   }
 
@@ -150,22 +128,6 @@ export function createCheckersAI(
   aiColor: PieceColor
 ): CheckersAI {
   return new CheckersAI(gameEngine, aiColor);
-}
-
-/**
- * Utility function to determine if a move is a sequential jump
- * (has multiple jumps in sequence)
- */
-export function isSequentialJump(move: Move, gameState: GameState): boolean {
-  if (!move.isCapture) {
-    return false;
-  }
-
-  // Check if this move leads to more jumps
-  const piece = move.piece;
-  const jumpSequences = findJumpSequences(gameState.board, piece, move.to);
-
-  return jumpSequences.some(sequence => sequence.length > 1);
 }
 
 /**

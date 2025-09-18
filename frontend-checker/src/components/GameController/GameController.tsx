@@ -163,6 +163,111 @@ export const GameController: React.FC<GameControllerProps> = () => {
     onPieceSelect: actions.selectPiece,
   });
 
+  // Helper function to check if interactions are allowed
+  const canInteract = (): boolean => {
+    if (gameState.gameStatus !== GameStatus.PLAYING) {
+      return false;
+    }
+
+    // Don't allow interactions if it's the AI's turn
+    if (
+      gameState.gameMode === GameMode.HUMAN_VS_AI &&
+      gameState.players.dark.isAI &&
+      gameState.currentPlayer === PieceColor.DARK
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Helper function to create a move object
+  const createMove = (
+    from: { row: number; col: number },
+    to: { row: number; col: number }
+  ): Move | null => {
+    if (!gameState.selectedPiece) return null;
+
+    const validation = validateMove(
+      gameState.board,
+      gameState.selectedPiece,
+      from,
+      to
+    );
+
+    if (!validation.isValid) return null;
+
+    return {
+      from,
+      to,
+      piece: gameState.selectedPiece,
+      capturedPiece: validation.capturedPiece,
+      isKinging: validation.isKinging || false,
+      isCapture: validation.isCapture || false,
+      isMultipleJump: false, // Will be determined during execution
+    };
+  };
+
+  // Handle square click
+  const handleSquareClick = (
+    row: number,
+    col: number,
+    piece: any,
+    isValidMove: boolean
+  ) => {
+    if (!canInteract()) return;
+
+    if (piece && piece.color === gameState.currentPlayer) {
+      actions.selectPiece(piece);
+    } else if (isValidMove && gameState.selectedPiece) {
+      const move = createMove(gameState.selectedPiece.position, { row, col });
+      if (move) {
+        actions.makeMove(move);
+      }
+    }
+  };
+
+  // Handle piece drop
+  const handlePieceDrop = (position: { row: number; col: number }) => {
+    if (!canInteract()) return;
+
+    const move = createMove(gameState.selectedPiece!.position, position);
+    if (move) {
+      actions.makeMove(move);
+    }
+  };
+
+  // Handle piece click
+  const handlePieceClick = (piece: any) => {
+    if (!canInteract() || piece.color !== gameState.currentPlayer) return;
+    actions.selectPiece(piece);
+  };
+
+  // Handle piece drag start
+  const handlePieceDragStart = (draggedPiece: any) => {
+    if (!canInteract() || draggedPiece.color !== gameState.currentPlayer)
+      return;
+    onDragStart(draggedPiece);
+  };
+
+  // Handle AI toggle
+  const handleAIToggle = (isAIMode: boolean) => {
+    const newMode = isAIMode ? GameMode.HUMAN_VS_AI : GameMode.HUMAN_VS_HUMAN;
+    actions.switchGameMode(newMode);
+  };
+
+  // Check if piece is disabled
+  const isPieceDisabled = (piece: any): boolean => {
+    if (piece.color !== gameState.currentPlayer) return true;
+    if (gameState.gameStatus !== GameStatus.PLAYING) return true;
+
+    return (
+      gameState.gameMode === GameMode.HUMAN_VS_AI &&
+      gameState.players.dark.isAI &&
+      gameState.currentPlayer === PieceColor.DARK
+    );
+  };
+
   const renderBoard = () => {
     const squares = [];
     for (let row = 0; row < GAME_CONFIG.BOARD_SIZE; row++) {
@@ -190,86 +295,8 @@ export const GameController: React.FC<GameControllerProps> = () => {
             isValidMove={isValidMove}
             isSelected={isSelected}
             isDropZone={isValidMove}
-            onClick={() => {
-              if (gameState.gameStatus !== GameStatus.PLAYING) {
-                return; // Don't allow interactions if game hasn't started
-              }
-
-              // Don't allow interactions if it's the AI's turn
-              if (
-                gameState.gameMode === GameMode.HUMAN_VS_AI &&
-                gameState.players.dark.isAI &&
-                gameState.currentPlayer === PieceColor.DARK
-              ) {
-                return;
-              }
-
-              if (piece && piece.color === gameState.currentPlayer) {
-                actions.selectPiece(piece);
-              } else if (isValidMove && gameState.selectedPiece) {
-                // Validate the move to get capture information
-                const validation = validateMove(
-                  gameState.board,
-                  gameState.selectedPiece,
-                  gameState.selectedPiece.position,
-                  { row, col }
-                );
-
-                if (validation.isValid) {
-                  // Create move object with proper capture information
-                  // Note: isMultipleJump will be determined during execution
-                  const move: Move = {
-                    from: gameState.selectedPiece.position,
-                    to: { row, col },
-                    piece: gameState.selectedPiece,
-                    capturedPiece: validation.capturedPiece,
-                    isKinging: validation.isKinging || false,
-                    isCapture: validation.isCapture || false,
-                    isMultipleJump: false, // Will be determined during execution
-                  };
-                  actions.makeMove(move);
-                }
-              }
-            }}
-            onDrop={position => {
-              if (gameState.gameStatus !== GameStatus.PLAYING) {
-                return; // Don't allow interactions if game hasn't started
-              }
-
-              // Don't allow interactions if it's the AI's turn
-              if (
-                gameState.gameMode === GameMode.HUMAN_VS_AI &&
-                gameState.players.dark.isAI &&
-                gameState.currentPlayer === PieceColor.DARK
-              ) {
-                return;
-              }
-
-              if (gameState.selectedPiece) {
-                // Validate the move to get capture information
-                const validation = validateMove(
-                  gameState.board,
-                  gameState.selectedPiece,
-                  gameState.selectedPiece.position,
-                  position
-                );
-
-                if (validation.isValid) {
-                  // Create move object with proper capture information
-                  // Note: isMultipleJump will be determined during execution
-                  const move: Move = {
-                    from: gameState.selectedPiece.position,
-                    to: position,
-                    piece: gameState.selectedPiece,
-                    capturedPiece: validation.capturedPiece,
-                    isKinging: validation.isKinging || false,
-                    isCapture: validation.isCapture || false,
-                    isMultipleJump: false, // Will be determined during execution
-                  };
-                  actions.makeMove(move);
-                }
-              }
-            }}
+            onClick={() => handleSquareClick(row, col, piece, isValidMove)}
+            onDrop={handlePieceDrop}
           >
             {piece && (
               <Piece
@@ -277,40 +304,10 @@ export const GameController: React.FC<GameControllerProps> = () => {
                 isLight={piece.color === PieceColor.LIGHT}
                 isKing={piece.isKing}
                 isDragging={false}
-                isDisabled={
-                  piece.color !== gameState.currentPlayer ||
-                  gameState.gameStatus !== GameStatus.PLAYING ||
-                  (gameState.gameMode === GameMode.HUMAN_VS_AI &&
-                    gameState.players.dark.isAI &&
-                    gameState.currentPlayer === PieceColor.DARK)
-                }
+                isDisabled={isPieceDisabled(piece)}
                 piece={piece}
-                onClick={() => {
-                  if (
-                    piece.color === gameState.currentPlayer &&
-                    gameState.gameStatus === GameStatus.PLAYING &&
-                    !(
-                      gameState.gameMode === GameMode.HUMAN_VS_AI &&
-                      gameState.players.dark.isAI &&
-                      gameState.currentPlayer === PieceColor.DARK
-                    )
-                  ) {
-                    actions.selectPiece(piece);
-                  }
-                }}
-                onDragStart={draggedPiece => {
-                  if (
-                    draggedPiece.color === gameState.currentPlayer &&
-                    gameState.gameStatus === GameStatus.PLAYING &&
-                    !(
-                      gameState.gameMode === GameMode.HUMAN_VS_AI &&
-                      gameState.players.dark.isAI &&
-                      gameState.currentPlayer === PieceColor.DARK
-                    )
-                  ) {
-                    onDragStart(draggedPiece);
-                  }
-                }}
+                onClick={() => handlePieceClick(piece)}
+                onDragStart={handlePieceDragStart}
                 onDragEnd={() => {
                   actions.deselectPiece();
                   onDragEnd();
@@ -333,12 +330,7 @@ export const GameController: React.FC<GameControllerProps> = () => {
           <StatusMessage>{gameRules.getGameStatusMessage()}</StatusMessage>
           <AIToggle
             isAIMode={gameState.gameMode === GameMode.HUMAN_VS_AI}
-            onToggle={isAIMode => {
-              const newMode = isAIMode
-                ? GameMode.HUMAN_VS_AI
-                : GameMode.HUMAN_VS_HUMAN;
-              actions.switchGameMode(newMode);
-            }}
+            onToggle={handleAIToggle}
             disabled={false} /* Allow toggling before and during games */
           />
           <div>

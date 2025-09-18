@@ -1,7 +1,6 @@
 import {
   CheckersAI,
   createCheckersAI,
-  isSequentialJump,
   getSequentialJumpMoves,
 } from '../../utils/ai';
 import { GameRulesEngine } from '../../utils/gameRules';
@@ -444,53 +443,6 @@ describe('AI Utility Functions', () => {
       highlightedSquares: [],
       currentJumpingPiece: null,
     };
-  });
-
-  describe('isSequentialJump', () => {
-    test('should return true for sequential jump moves', () => {
-      const piece: Piece = {
-        id: 'test-piece',
-        color: PieceColor.LIGHT,
-        type: PieceType.PAWN,
-        position: { row: 2, col: 2 },
-        isKing: false,
-      };
-
-      const move: Move = {
-        from: { row: 2, col: 2 },
-        to: { row: 4, col: 4 },
-        piece,
-        isCapture: true,
-        isKinging: false,
-        isMultipleJump: true,
-      };
-
-      // This would need a proper board setup to test sequential jumps
-      // For now, we'll test the basic structure
-      expect(move.isMultipleJump).toBe(true);
-    });
-
-    test('should return false for non-capture moves', () => {
-      const piece: Piece = {
-        id: 'test-piece',
-        color: PieceColor.LIGHT,
-        type: PieceType.PAWN,
-        position: { row: 2, col: 2 },
-        isKing: false,
-      };
-
-      const move: Move = {
-        from: { row: 2, col: 2 },
-        to: { row: 3, col: 3 },
-        piece,
-        isCapture: false,
-        isKinging: false,
-        isMultipleJump: false,
-      };
-
-      const result = isSequentialJump(move, gameState);
-      expect(result).toBe(false);
-    });
   });
 
   describe('getSequentialJumpMoves', () => {

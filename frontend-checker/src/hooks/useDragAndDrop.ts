@@ -74,7 +74,6 @@ export const useDragAndDrop = ({
         if (isValidDrop) {
           // This will trigger move validation and execution
           // The actual move execution will be handled by the game logic
-          console.log('Valid drop at:', position);
           return true;
         }
       }
