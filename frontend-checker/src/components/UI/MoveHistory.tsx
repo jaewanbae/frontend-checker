@@ -129,7 +129,7 @@ const EmptyStateText = styled.p`
   line-height: 1.4;
 `;
 
-const UndoButton = styled.div`
+const UndoButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,6 +145,7 @@ const UndoButton = styled.div`
   margin-left: auto;
   transition: all ${({ theme }) => theme.transitions.fast};
   user-select: none;
+  padding: 0;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.danger};
