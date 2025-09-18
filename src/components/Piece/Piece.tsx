@@ -24,13 +24,13 @@ const PieceContainer = styled.div<{
   box-shadow: ${({ theme }) => theme.shadows.md};
   cursor: grab;
 
-  ${({ isDragging }) =>
+  ${({ isDragging, theme }) =>
     isDragging &&
     `
     cursor: grabbing;
     transform: scale(1.1);
     z-index: 1000;
-    box-shadow: 0 8px 25px #2a2a2a;
+    box-shadow: ${theme.shadows.xl};
   `}
 
   transition: ${({ theme }) => theme.transitions.fast};
@@ -45,7 +45,7 @@ const PieceContainer = styled.div<{
   }
 
   /* King crown indicator */
-  ${({ isKing }) =>
+  ${({ isKing, theme }) =>
     isKing &&
     `
     &::after {
@@ -55,8 +55,8 @@ const PieceContainer = styled.div<{
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 1.2em;
-      color: #ffd700;
-      text-shadow: 1px 1px 2px #2a2a2a;
+      color: ${theme.colors.lightKing};
+      text-shadow: ${theme.shadows.sm};
     }
   `}
 `;

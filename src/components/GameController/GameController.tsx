@@ -27,14 +27,29 @@ const GameContainer = styled.div`
   overflow: hidden;
   box-sizing: border-box;
 
-  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
+  ${({ theme }) => theme.responsive.desktop} {
     gap: ${UI_CONFIG.GAP_SMALL};
     padding: ${UI_CONFIG.GAP_SMALL};
   }
 
-  @media (max-height: 800px) {
-    gap: 4px;
-    padding: 8px;
+  ${({ theme }) => theme.responsive.height900} {
+    gap: ${({ theme }) => theme.spacing.sm};
+    padding: ${({ theme }) => theme.spacing.sm};
+  }
+
+  ${({ theme }) => theme.responsive.height800} {
+    gap: ${({ theme }) => theme.spacing.sm};
+    padding: ${({ theme }) => theme.spacing.sm};
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    gap: ${({ theme }) => theme.spacing.xs};
+    padding: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    gap: ${({ theme }) => theme.spacing.xs};
+    padding: ${({ theme }) => theme.spacing.xs};
   }
 `;
 
@@ -48,10 +63,26 @@ const MainGameArea = styled.div`
   flex: 1;
   overflow: hidden;
 
-  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
+  ${({ theme }) => theme.responsive.desktop} {
     flex-direction: column;
     align-items: center;
     gap: ${UI_CONFIG.GAP_SMALL};
+  }
+
+  ${({ theme }) => theme.responsive.height900} {
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
+
+  ${({ theme }) => theme.responsive.height800} {
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    gap: ${({ theme }) => theme.spacing.xs};
   }
 `;
 
@@ -62,30 +93,66 @@ const GameBoardSection = styled.div`
   gap: ${UI_CONFIG.GAP_SMALL};
   flex-shrink: 0;
 
-  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
-    gap: 4px;
+  ${({ theme }) => theme.responsive.desktop} {
+    gap: ${({ theme }) => theme.spacing.xs};
   }
 
-  @media (max-height: 800px) {
-    gap: 2px;
+  ${({ theme }) => theme.responsive.height900} {
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
+
+  ${({ theme }) => theme.responsive.height800} {
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    gap: ${({ theme }) => theme.spacing.xs};
   }
 `;
 
 const GameHeader = styled.div`
   text-align: center;
-  margin-bottom: ${UI_CONFIG.GAP_SMALL};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  @media (max-width: ${UI_CONFIG.BREAKPOINTS.DESKTOP}) {
-    margin-bottom: 4px;
+  h1 {
+    font-size: 1.2rem;
+    margin: 0;
+    ${({ theme }) => theme.responsive.height800} {
+      font-size: 1.1rem;
+    }
+
+    ${({ theme }) => theme.responsive.height700} {
+      font-size: 1rem;
+    }
+
+    ${({ theme }) => theme.responsive.height600} {
+      font-size: 0.9rem;
+    }
   }
 
-  @media (max-height: 800px) {
-    margin-bottom: 2px;
+  p {
+    font-size: 0.8rem;
+    margin: 0;
+    ${({ theme }) => theme.responsive.height800} {
+      font-size: 0.75rem;
+    }
+
+    ${({ theme }) => theme.responsive.height700} {
+      font-size: 0.7rem;
+    }
+
+    ${({ theme }) => theme.responsive.height600} {
+      font-size: 0.65rem;
+    }
   }
 `;
 
@@ -95,41 +162,43 @@ const GameInfo = styled.div`
   align-items: center;
   width: 100%;
   max-width: min(85vw, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
-  padding: ${UI_CONFIG.GAP_MEDIUM};
+  padding: ${({ theme }) => theme.spacing.sm};
   background-color: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   box-shadow: ${({ theme }) => theme.shadows.sm};
+  font-size: 0.8rem;
 `;
 
 const GameControls = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${UI_CONFIG.GAP_SMALL};
-  margin-bottom: ${UI_CONFIG.GAP_MEDIUM};
+  gap: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
 const PlayerInfo = styled.div<{ isActive: boolean }>`
-  padding: ${UI_CONFIG.GAP_SMALL} ${UI_CONFIG.GAP_MEDIUM};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
   background-color: ${({ isActive, theme }) =>
     isActive ? theme.colors.selected : 'transparent'};
   transition: ${({ theme }) => theme.transitions.fast};
-  min-width: 140px; /* Ensure consistent width to prevent UI shifting */
+  min-width: 100px;
   text-align: center;
+  font-size: 0.8rem;
 `;
 
 const GameButton = styled.button`
   background-color: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.textLight};
   border: none;
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-size: 1rem;
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: ${({ theme }) => theme.transitions.fast};
-  min-width: 120px; /* Consistent button width */
+  min-width: 100px;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.secondary};
@@ -151,7 +220,7 @@ const StatusMessage = styled.p`
 
 const ControlsRow = styled.div`
   display: flex;
-  gap: 16px;
+  gap: ${({ theme }) => theme.spacing.md};
   align-items: center;
 `;
 

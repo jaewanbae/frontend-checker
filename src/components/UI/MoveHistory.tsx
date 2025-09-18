@@ -14,23 +14,69 @@ const MoveHistoryContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 300px;
-  height: calc(min(75vw, 70vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px) + 80px);
+  max-width: 250px;
+  height: calc(${({ theme }) => theme.responsive.boardSize.base}, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px) + 80px);
   min-height: calc(${GAME_CONFIG.MIN_BOARD_SIZE + 100}px + 80px);
   background-color: ${({ theme }) => theme.colors.surface};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   box-shadow: ${({ theme }) => theme.shadows.md};
   overflow: hidden;
+
+  /* Responsive sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height900} {
+    height: calc(${({ theme }) => theme.responsive.boardSize.height900} + ${({ theme }) => theme.spacing.sm});
+    max-width: 280px;
+  }
+
+  ${({ theme }) => theme.responsive.height800} {
+    height: calc(${({ theme }) => theme.responsive.boardSize.height800} + ${({ theme }) => theme.spacing.sm});
+    max-width: 260px;
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    height: calc(${({ theme }) => theme.responsive.boardSize.height700} + ${({ theme }) => theme.spacing.xs});
+    max-width: 240px;
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    height: calc(${({ theme }) => theme.responsive.boardSize.height600} + ${({ theme }) => theme.spacing.xs});
+    max-width: 220px;
+  }
+
+  ${({ theme }) => theme.responsive.desktop} {
+    max-width: 250px;
+  }
+
+  ${({ theme }) => theme.responsive.tablet} {
+    max-width: 200px;
+    height: calc(min(90vw, 40vh, 300px) + ${({ theme }) => theme.spacing.xs});
+  }
 `;
 
 const MoveHistoryHeader = styled.div`
   background-color: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.textLight};
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.sm};
   text-align: center;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.textSecondary};
+
+  /* Responsive header sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    padding: ${({ theme }) => theme.spacing.sm};
+    font-size: 1rem;
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    padding: ${({ theme }) => theme.spacing.xs};
+    font-size: 0.9rem;
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    padding: ${({ theme }) => theme.spacing.xs};
+    font-size: 0.8rem;
+  }
 `;
 
 const MovesList = styled.div`
@@ -41,6 +87,22 @@ const MovesList = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
   scroll-behavior: smooth;
+
+  /* Responsive moves list sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    padding: ${({ theme }) => theme.spacing.sm};
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    padding: ${({ theme }) => theme.spacing.xs};
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    padding: ${({ theme }) => theme.spacing.xs};
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
 `;
 
 const MoveItem = styled.div<{ isCurrentPlayer: boolean }>`
@@ -55,6 +117,22 @@ const MoveItem = styled.div<{ isCurrentPlayer: boolean }>`
       isCurrentPlayer ? theme.colors.primary : theme.colors.textSecondary};
   transition: ${({ theme }) => theme.transitions.fast};
   margin-bottom: ${({ theme }) => theme.spacing.xs};
+
+  /* Responsive move item sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    padding: ${({ theme }) => theme.spacing.sm};
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    padding: ${({ theme }) => theme.spacing.xs};
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    padding: ${({ theme }) => theme.spacing.xs};
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
+  }
 `;
 
 const MoveHeader = styled.div`
@@ -62,18 +140,57 @@ const MoveHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.xs};
+
+  /* Responsive move header sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
+  }
 `;
 
 const PlayerName = styled.span<{ color: PieceColor }>`
   font-weight: 600;
   color: ${({ color, theme }) =>
     color === PieceColor.LIGHT ? theme.colors.primary : theme.colors.danger};
+
+  /* Responsive player name sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    font-size: 0.9rem;
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    font-size: 0.8rem;
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    font-size: 0.7rem;
+  }
 `;
 
 const MoveNumber = styled.span`
   font-size: 0.9rem;
   color: ${({ theme }) => theme.colors.textPrimary};
   font-weight: 500;
+
+  /* Responsive move number sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    font-size: 0.8rem;
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    font-size: 0.7rem;
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    font-size: 0.6rem;
+  }
 `;
 
 const MoveDetails = styled.div`
@@ -81,14 +198,43 @@ const MoveDetails = styled.div`
   flex-direction: row;
   gap: ${({ theme }) => theme.spacing.sm};
   align-items: center;
+
+  /* Responsive move details sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
 `;
 
 const LocationValue = styled.span`
   font-family: 'Courier New', monospace;
   background-color: ${({ theme }) => theme.colors.background};
-  padding: 2px 6px;
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.xs};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   border: 1px solid ${({ theme }) => theme.colors.textSecondary};
+
+  /* Responsive location value sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    padding: 1px ${({ theme }) => theme.spacing.sm};
+    font-size: 0.8rem;
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    padding: 1px ${({ theme }) => theme.spacing.xs};
+    font-size: 0.7rem;
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    padding: 1px ${({ theme }) => theme.spacing.xs};
+    font-size: 0.6rem;
+  }
 `;
 
 const MoveActions = styled.div`
@@ -99,7 +245,7 @@ const MoveActions = styled.div`
 
 const ActionBadge = styled.span<{ type: 'capture' | 'kinging' }>`
   font-size: 0.8rem;
-  padding: 2px 6px;
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.xs};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   font-weight: 500;
   background-color: ${({ type, theme }) =>
@@ -133,8 +279,8 @@ const UndoButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: ${({ theme }) => theme.spacing.lg};
+  height: ${({ theme }) => theme.spacing.lg};
   border-radius: ${({ theme }) => theme.borderRadius.full};
   background-color: ${({ theme }) => theme.colors.background};
   border: 2px solid ${({ theme }) => theme.colors.danger};
@@ -151,17 +297,17 @@ const UndoButton = styled.button`
     background-color: ${({ theme }) => theme.colors.danger};
     color: ${({ theme }) => theme.colors.textLight};
     transform: scale(1.15) rotate(-15deg);
-    box-shadow: 0 3px 10px #dc26264d;
+    box-shadow: ${({ theme }) => theme.shadows.lg};
   }
 
   &:active {
     transform: scale(0.95) rotate(-10deg);
-    box-shadow: 0 1px 4px #dc262666;
+    box-shadow: ${({ theme }) => theme.shadows.sm};
   }
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px #dc262633;
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.danger}33;
   }
 `;
 

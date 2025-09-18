@@ -6,22 +6,49 @@ const BoardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const BoardWithLabels = styled.div`
   display: grid;
-  grid-template-columns: 50px repeat(${GAME_CONFIG.BOARD_SIZE}, 1fr) 50px;
-  grid-template-rows: 50px repeat(${GAME_CONFIG.BOARD_SIZE}, 1fr) 50px;
-  width: min(75vw, 70vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
-  height: min(75vw, 70vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
+  grid-template-columns: 30px repeat(${GAME_CONFIG.BOARD_SIZE}, 1fr) 30px;
+  grid-template-rows: 30px repeat(${GAME_CONFIG.BOARD_SIZE}, 1fr) 30px;
+  width: min(60vw, 50vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
+  height: min(60vw, 50vh, ${GAME_CONFIG.MAX_BOARD_SIZE + 100}px);
   min-width: ${GAME_CONFIG.MIN_BOARD_SIZE + 100}px;
   min-height: ${GAME_CONFIG.MIN_BOARD_SIZE + 100}px;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   overflow: hidden;
   background-color: ${({ theme }) => theme.colors.background};
-  padding: 12px;
-  gap: 6px;
+  padding: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.xs};
+
+  /* Responsive sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height900} {
+    width: min(${({ theme }) => theme.responsive.boardSize.height900});
+    height: min(${({ theme }) => theme.responsive.boardSize.height900});
+  }
+
+  ${({ theme }) => theme.responsive.height800} {
+    width: min(${({ theme }) => theme.responsive.boardSize.height800});
+    height: min(${({ theme }) => theme.responsive.boardSize.height800});
+    padding: ${({ theme }) => theme.spacing.sm};
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    width: min(${({ theme }) => theme.responsive.boardSize.height700});
+    height: min(${({ theme }) => theme.responsive.boardSize.height700});
+    padding: ${({ theme }) => theme.spacing.xs};
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    width: min(${({ theme }) => theme.responsive.boardSize.height600});
+    height: min(${({ theme }) => theme.responsive.boardSize.height600});
+    padding: ${({ theme }) => theme.spacing.xs};
+    gap: ${({ theme }) => theme.spacing.xs};
+  }
 `;
 
 const BoardContainer = styled.div`
@@ -42,11 +69,24 @@ const Label = styled.div<{ isColumn?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: 12px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.textSecondary};
   background-color: ${({ theme }) => theme.colors.background};
   user-select: none;
+
+  /* Responsive label sizing using theme utilities */
+  ${({ theme }) => theme.responsive.height800} {
+    font-size: 11px;
+  }
+
+  ${({ theme }) => theme.responsive.height700} {
+    font-size: 10px;
+  }
+
+  ${({ theme }) => theme.responsive.height600} {
+    font-size: 9px;
+  }
 
   ${({ isColumn }) =>
     isColumn

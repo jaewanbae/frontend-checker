@@ -11,22 +11,22 @@ interface AIToggleProps {
 const ToggleContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   background: ${props => props.theme.colors.surface};
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
   border: 1px solid ${props => props.theme.colors.border};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
 const ToggleLabel = styled.span<{ isActive: boolean }>`
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   color: ${props =>
     props.isActive
       ? props.theme.colors.primary
       : props.theme.colors.textSecondary};
-  transition: color 0.2s ease;
+  transition: ${({ theme }) => theme.transitions.fast};
 `;
 
 const ToggleSwitch = styled.div<{ isOn: boolean; disabled?: boolean }>`
@@ -41,7 +41,7 @@ const ToggleSwitch = styled.div<{ isOn: boolean; disabled?: boolean }>`
         : props.theme.colors.border};
   border-radius: 12px;
   cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
-  transition: background-color 0.2s ease;
+  transition: ${({ theme }) => theme.transitions.fast};
   opacity: ${props => (props.disabled ? 0.6 : 1)};
 
   &:hover {
@@ -60,10 +60,10 @@ const ToggleThumb = styled.div<{ isOn: boolean }>`
   left: ${props => (props.isOn ? '26px' : '2px')};
   width: 20px;
   height: 20px;
-  background: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: left 0.2s ease;
+  background: ${({ theme }) => theme.colors.light};
+  border-radius: ${({ theme }) => theme.borderRadius.full};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  transition: ${({ theme }) => theme.transitions.fast};
 `;
 
 const AIToggle: React.FC<AIToggleProps> = ({
