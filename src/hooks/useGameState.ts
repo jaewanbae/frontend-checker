@@ -6,7 +6,6 @@ import {
   Piece,
   Move,
   Position,
-  Board,
 } from '../types/game.types';
 import { GAME_CONFIG, GAME_STATE } from '../constants/gameConstants';
 import { PieceColor, GameStatus, GameResult } from '../constants/gameEnums';
@@ -428,7 +427,7 @@ export const useGameState = () => {
     } else {
       aiRef.current = null;
     }
-  }, [gameState.gameMode, gameState.gameStatus]);
+  }, [gameState.gameMode, gameState.gameStatus, gameState]);
 
   // Save game state whenever it changes (except for temporary states)
   useEffect(() => {
@@ -524,6 +523,7 @@ export const useGameState = () => {
     gameState.currentPlayer,
     gameState.gameStatus,
     gameState.gameMode,
+    gameState,
     isLoading,
   ]);
 
@@ -653,7 +653,7 @@ export const useGameState = () => {
   // AI utility functions
   const isAITurn = useCallback(() => {
     return aiRef.current?.isAITurn() || false;
-  }, [gameState.currentPlayer]);
+  }, []);
 
   const getAIColor = useCallback(() => {
     return aiRef.current?.getAIColor() || null;

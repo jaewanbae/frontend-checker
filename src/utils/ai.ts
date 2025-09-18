@@ -1,4 +1,4 @@
-import { Board, Piece, Move, PieceColor, GameState } from '../types/game.types';
+import { Move, PieceColor, GameState } from '../types/game.types';
 import { getValidMovesForPlayer, findJumpSequences } from './moveValidation';
 import { GameRulesEngine } from './gameRules';
 
