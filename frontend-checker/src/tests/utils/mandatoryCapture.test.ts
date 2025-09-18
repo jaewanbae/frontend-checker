@@ -103,16 +103,6 @@ describe('Mandatory Capture Rule', () => {
         null
       );
 
-      console.log(
-        'Valid moves:',
-        validMoves.map(m => ({
-          from: m.from,
-          to: m.to,
-          isCapture: m.isCapture,
-          pieceId: m.piece.id,
-        }))
-      );
-
       // All valid moves should be captures
       validMoves.forEach(move => {
         expect(move.isCapture).toBe(true);
