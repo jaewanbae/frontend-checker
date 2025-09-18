@@ -93,16 +93,10 @@ const clearSavedGameState = (): void => {
 const createInitialGameState = (): GameState => {
   // Check if there's a saved game state first
   const savedState = loadGameState();
-  if (savedState && savedState.gameStatus === GameStatus.PLAYING) {
-    // Return the saved state to prevent jarring UI changes
-    // Cast to GameState since we know it's a complete saved state
-    return savedState as GameState;
-  }
-
-  // Otherwise, create a fresh initial state
   const savedStats = loadGameStats();
 
-  return {
+  // Create the default initial state
+  const defaultState: GameState = {
     board: initializeBoard(),
     currentPlayer: PieceColor.LIGHT,
     players: {
@@ -138,6 +132,23 @@ const createInitialGameState = (): GameState => {
     highlightedSquares: [],
     currentJumpingPiece: null,
   };
+
+  // If there's a saved state and the game is still playing, merge it with defaults
+  if (savedState && savedState.gameStatus === GameStatus.PLAYING) {
+    return {
+      ...defaultState,
+      ...savedState,
+      // Ensure critical properties are properly set
+      selectedPiece: null,
+      validMoves: [],
+      highlightedSquares: [],
+      // Only preserve currentJumpingPiece if it's valid
+      currentJumpingPiece: savedState.currentJumpingPiece || null,
+    };
+  }
+
+  // Otherwise, return the default state
+  return defaultState;
 };
 
 // Game state reducer
@@ -266,22 +277,38 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
         lastMove.piece.color === PieceColor.DARK && isAIGame;
 
       if (isAIGame && isLastMoveByAI) {
-        // In AI mode, if last move was by AI, we need to undo more moves
-        // Check if the last move is part of a sequential jump
-        let sequentialJumpCount = 0;
+        // AI made the last move - undo all AI moves + 1 human move
+        let aiMoveCount = 0;
         let currentIndex = state.moveHistory.length - 1;
 
-        // Count consecutive moves by the same AI player (sequential jumps)
+        // Count consecutive moves by the same AI player (including single moves and multi-jumps)
         while (
           currentIndex >= 0 &&
           state.moveHistory[currentIndex].piece.color === PieceColor.DARK
         ) {
-          sequentialJumpCount++;
+          aiMoveCount++;
           currentIndex--;
         }
 
-        // Undo all AI sequential jumps + 1 human move
-        movesToUndo = sequentialJumpCount + 1;
+        // Undo all AI moves + 1 human move (AI turn -> Human turn)
+        movesToUndo = aiMoveCount + 1;
+      } else if (isAIGame && !isLastMoveByAI) {
+        // Human made the last move - check if it's part of a multi-jump sequence
+        let humanMoveCount = 0;
+        let currentIndex = state.moveHistory.length - 1;
+
+        // Count consecutive moves by the same human player (including single moves and multi-jumps)
+        while (
+          currentIndex >= 0 &&
+          state.moveHistory[currentIndex].piece.color === PieceColor.LIGHT
+        ) {
+          humanMoveCount++;
+          currentIndex--;
+        }
+
+        // If it's a multi-jump sequence (more than 1 move), undo the entire sequence
+        // If it's a single move, undo just that move
+        movesToUndo = humanMoveCount;
       }
 
       // Create a new board and reverse the moves
@@ -368,6 +395,17 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
       newPlayers.light.isActive = currentPlayer === PieceColor.LIGHT;
       newPlayers.dark.isActive = currentPlayer === PieceColor.DARK;
 
+      // Determine if we should maintain currentJumpingPiece
+      // If the last move was part of a jumping sequence, maintain it
+      let currentJumpingPiece = null;
+      if (newMoveHistory.length > 0) {
+        const lastMove = newMoveHistory[newMoveHistory.length - 1];
+        if (lastMove.isMultipleJump && lastMove.piece.color === currentPlayer) {
+          // If the last move was a multiple jump by the current player, maintain the jumping piece
+          currentJumpingPiece = { ...lastMove.piece, position: lastMove.to };
+        }
+      }
+
       return {
         ...state,
         board: newBoard,
@@ -375,7 +413,7 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
         players: newPlayers,
         stats: newStats,
         moveHistory: newMoveHistory,
-        currentJumpingPiece: null,
+        currentJumpingPiece,
         selectedPiece: null,
         validMoves: [],
         highlightedSquares: [],
