@@ -65,7 +65,7 @@ export const validateMove = (
     }
 
     const isKinging = canPromoteToKing(piece, to);
-    return { isValid: true, isKinging };
+    return { isValid: true, isCapture: false, isKinging };
   }
 
   // Check if it's a capture move (2 squares)

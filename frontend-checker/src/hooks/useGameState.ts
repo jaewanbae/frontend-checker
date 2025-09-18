@@ -1,4 +1,4 @@
-import { useState, useCallback, useReducer, useEffect } from 'react';
+import { useState, useCallback, useReducer, useEffect, useRef } from 'react';
 import {
   GameState,
   GameAction,
@@ -17,6 +17,7 @@ import {
   isGameOver,
   isPlayerTurn,
 } from '../utils/gameRules';
+import { CheckersAI, createCheckersAI } from '../utils/ai';
 
 // Game state persistence keys
 const GAME_STATE_KEY = 'checkers-game-state';
@@ -248,75 +249,106 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
         return state; // No moves to undo
       }
 
-      // Get the last move
+      // Check if we're in AI vs Human mode and the last move was made by AI
+      const isAIVsHuman = state.gameMode === 'human-vs-ai';
       const lastMove = state.moveHistory[state.moveHistory.length - 1];
+      const lastMoveWasByAI =
+        isAIVsHuman &&
+        state.players.dark.isAI &&
+        lastMove.piece.color === PieceColor.DARK;
 
-      // Create a new board state by reversing the last move
+      // Determine how many moves to undo
+      let movesToUndo = 1;
+      if (lastMoveWasByAI && state.moveHistory.length >= 2) {
+        // In AI vs Human mode, if the last move was by AI, undo both AI and human moves
+        movesToUndo = 2;
+        console.log('Multi-undo: Undoing both AI and human moves');
+      }
+
+      // Create a new board state by reversing the moves
       let newBoard = { ...state.board };
+      let newPlayers = { ...state.players };
+      let newStats = { ...state.stats };
+      let newMoveHistory = [...state.moveHistory];
 
-      // Move the piece back to its original position
-      const pieceToMoveBack = { ...lastMove.piece, position: lastMove.from };
-      newBoard = setPieceAt(newBoard, lastMove.to, null);
-      newBoard = setPieceAt(newBoard, lastMove.from, pieceToMoveBack);
+      // Undo the specified number of moves
+      for (let i = 0; i < movesToUndo; i++) {
+        if (newMoveHistory.length === 0) break;
 
-      // If there was a captured piece, restore it
-      if (lastMove.capturedPiece) {
-        newBoard = setPieceAt(
-          newBoard,
-          lastMove.capturedPiece.position,
-          lastMove.capturedPiece
-        );
+        const moveToUndo = newMoveHistory[newMoveHistory.length - 1];
+
+        // Move the piece back to its original position
+        const pieceToMoveBack = {
+          ...moveToUndo.piece,
+          position: moveToUndo.from,
+        };
+        newBoard = setPieceAt(newBoard, moveToUndo.to, null);
+        newBoard = setPieceAt(newBoard, moveToUndo.from, pieceToMoveBack);
+
+        // If there was a captured piece, restore it
+        if (moveToUndo.capturedPiece) {
+          newBoard = setPieceAt(
+            newBoard,
+            moveToUndo.capturedPiece.position,
+            moveToUndo.capturedPiece
+          );
+        }
+
+        // If the piece was kinged, revert it back to a regular piece
+        if (moveToUndo.isKinging) {
+          const revertedPiece = { ...pieceToMoveBack, isKing: false };
+          newBoard = setPieceAt(newBoard, moveToUndo.from, revertedPiece);
+        }
+
+        // Update capture counts
+        const capturingPlayer =
+          moveToUndo.piece.color === PieceColor.LIGHT ? 'light' : 'dark';
+        const capturedPlayer =
+          moveToUndo.piece.color === PieceColor.LIGHT ? 'dark' : 'light';
+
+        if (moveToUndo.capturedPiece) {
+          newPlayers[capturingPlayer].captures = Math.max(
+            0,
+            newPlayers[capturingPlayer].captures - 1
+          );
+          newPlayers[capturedPlayer].piecesRemaining = Math.min(
+            GAME_CONFIG.PIECES_PER_PLAYER,
+            newPlayers[capturedPlayer].piecesRemaining + 1
+          );
+        }
+
+        // Update stats
+        newStats.moveCount = Math.max(0, newStats.moveCount - 1);
+        if (moveToUndo.capturedPiece) {
+          newStats.captures[capturingPlayer] = Math.max(
+            0,
+            newStats.captures[capturingPlayer] - 1
+          );
+        }
+
+        // Remove the move from history
+        newMoveHistory = newMoveHistory.slice(0, -1);
       }
 
-      // If the piece was kinged, revert it back to a regular piece
-      let revertedPiece = pieceToMoveBack;
-      if (lastMove.isKinging) {
-        revertedPiece = { ...pieceToMoveBack, isKing: false };
-        newBoard = setPieceAt(newBoard, lastMove.from, revertedPiece);
+      // Determine the current player after undo
+      // If we undid multiple moves, we want to go back to the human player's turn
+      let currentPlayer: PieceColor;
+      if (lastMoveWasByAI && movesToUndo === 2) {
+        // After undoing AI + human moves, it should be the human's turn again
+        currentPlayer = PieceColor.LIGHT; // Human is always light player
+      } else {
+        // Normal undo - go back to the player who made the move we undid
+        currentPlayer = lastMove.piece.color;
       }
-
-      // Update capture counts
-      const capturingPlayer =
-        lastMove.piece.color === PieceColor.LIGHT ? 'light' : 'dark';
-      const capturedPlayer =
-        lastMove.piece.color === PieceColor.LIGHT ? 'dark' : 'light';
-
-      const newPlayers = { ...state.players };
-      if (lastMove.capturedPiece) {
-        newPlayers[capturingPlayer].captures = Math.max(
-          0,
-          newPlayers[capturingPlayer].captures - 1
-        );
-        newPlayers[capturedPlayer].piecesRemaining = Math.min(
-          GAME_CONFIG.PIECES_PER_PLAYER,
-          newPlayers[capturedPlayer].piecesRemaining + 1
-        );
-      }
-
-      // Update stats
-      const newStats = { ...state.stats };
-      newStats.moveCount = Math.max(0, newStats.moveCount - 1);
-      if (lastMove.capturedPiece) {
-        newStats.captures[capturingPlayer] = Math.max(
-          0,
-          newStats.captures[capturingPlayer] - 1
-        );
-      }
-
-      // Remove the last move from history
-      const newMoveHistory = state.moveHistory.slice(0, -1);
-
-      // Determine the previous player (the one who made the move we're undoing)
-      const previousPlayer = lastMove.piece.color;
 
       // Update player active states
-      newPlayers.light.isActive = previousPlayer === PieceColor.LIGHT;
-      newPlayers.dark.isActive = previousPlayer === PieceColor.DARK;
+      newPlayers.light.isActive = currentPlayer === PieceColor.LIGHT;
+      newPlayers.dark.isActive = currentPlayer === PieceColor.DARK;
 
       return {
         ...state,
         board: newBoard,
-        currentPlayer: previousPlayer,
+        currentPlayer,
         players: newPlayers,
         stats: newStats,
         moveHistory: newMoveHistory,
@@ -324,6 +356,24 @@ const gameStateReducer = (state: GameState, action: GameAction): GameState => {
         selectedPiece: null,
         validMoves: [],
         highlightedSquares: [],
+      };
+
+    case 'SWITCH_GAME_MODE':
+      return {
+        ...state,
+        gameMode: action.mode,
+        // Update player AI status based on new mode
+        players: {
+          ...state.players,
+          light: {
+            ...state.players.light,
+            isAI: false, // Light player is always human
+          },
+          dark: {
+            ...state.players.dark,
+            isAI: action.mode === 'human-vs-ai', // Dark player is AI only in AI mode
+          },
+        },
       };
 
     default:
@@ -338,6 +388,25 @@ export const useGameState = () => {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // AI reference - persists across renders
+  const aiRef = useRef<CheckersAI | null>(null);
+
+  // Initialize AI when game mode changes to HUMAN_VS_AI
+  useEffect(() => {
+    if (
+      gameState.gameMode === 'human-vs-ai' &&
+      gameState.gameStatus === GameStatus.PLAYING
+    ) {
+      // AI always plays as DARK (second player)
+      const engine = createGameRulesEngine(gameState);
+      aiRef.current = createCheckersAI(engine, PieceColor.DARK);
+      console.log('AI initialized for game mode:', gameState.gameMode);
+    } else {
+      aiRef.current = null;
+      console.log('AI cleared for game mode:', gameState.gameMode);
+    }
+  }, [gameState.gameMode, gameState.gameStatus]);
 
   // Load saved game state on component mount
   useEffect(() => {
@@ -355,6 +424,110 @@ export const useGameState = () => {
     }
     saveGameStats(gameState.stats);
   }, [gameState]);
+
+  // AI move execution - trigger AI move after human move and turn switch
+  useEffect(() => {
+    console.log('AI move effect triggered:', {
+      hasAI: !!aiRef.current,
+      gameMode: gameState.gameMode,
+      gameStatus: gameState.gameStatus,
+      currentPlayer: gameState.currentPlayer,
+      aiColor: aiRef.current?.getAIColor(),
+      isLoading,
+    });
+
+    if (
+      aiRef.current &&
+      gameState.gameMode === 'human-vs-ai' &&
+      gameState.gameStatus === GameStatus.PLAYING &&
+      gameState.currentPlayer === aiRef.current.getAIColor() &&
+      !isLoading
+    ) {
+      console.log('AI move execution starting...');
+      // Execute AI move after a short delay for better UX
+      const aiMoveTimeout = setTimeout(() => {
+        try {
+          setIsLoading(true);
+
+          // Update AI's game engine with current state
+          const engine = createGameRulesEngine(gameState);
+          aiRef.current!.updateGameEngine(engine);
+
+          // Execute AI moves until the sequence is complete
+          let moveExecuted = true;
+          let moveCount = 0;
+          const maxMoves = 10; // Safety limit to prevent infinite loops
+
+          while (moveExecuted && moveCount < maxMoves) {
+            // Get the AI's move using the updated engine
+            const aiMove = aiRef.current!.getBestMove();
+
+            if (aiMove) {
+              // Execute the move directly on the engine
+              moveExecuted = engine.executeMove(aiMove);
+
+              if (moveExecuted) {
+                // Get the updated game state from the engine
+                const newGameState = engine.getGameState();
+
+                // Dispatch the AI move
+                dispatch({
+                  type: 'MAKE_MOVE',
+                  move: aiMove,
+                  newGameState,
+                });
+
+                // Check if game is over
+                if (isGameOver(newGameState)) {
+                  dispatch({
+                    type: 'END_GAME',
+                    result: newGameState.gameResult,
+                  });
+                  break;
+                }
+
+                // Update the AI's engine with the new state
+                aiRef.current!.updateGameEngine(engine);
+
+                // Check if there are more jumps available (sequential jump)
+                if (newGameState.currentJumpingPiece) {
+                  console.log('AI continuing sequential jump...');
+                  moveCount++;
+                  // Continue the loop to make the next jump
+                } else {
+                  // No more jumps, sequence is complete
+                  console.log('AI sequential jump sequence complete');
+                  break;
+                }
+              } else {
+                console.warn('AI move execution failed');
+                break;
+              }
+            } else {
+              console.warn('AI could not find a valid move');
+              break;
+            }
+          }
+
+          if (moveCount >= maxMoves) {
+            console.warn('AI move sequence exceeded safety limit');
+          }
+        } catch (err) {
+          console.error('AI move error:', err);
+          setError(err instanceof Error ? err.message : 'AI move failed');
+        } finally {
+          setIsLoading(false);
+        }
+      }, 500); // 500ms delay for better user experience
+
+      return () => clearTimeout(aiMoveTimeout);
+    }
+  }, [
+    gameState.currentPlayer,
+    gameState.gameStatus,
+    gameState.gameMode,
+    isLoading,
+  ]);
 
   const selectPiece = useCallback((piece: Piece) => {
     dispatch({ type: 'SELECT_PIECE', piece });
@@ -416,6 +589,10 @@ export const useGameState = () => {
     dispatch({ type: 'START_GAME', mode });
   }, []);
 
+  const switchGameMode = useCallback((mode: GameMode) => {
+    dispatch({ type: 'SWITCH_GAME_MODE', mode });
+  }, []);
+
   const resetGame = useCallback(() => {
     // Clear local storage to ensure completely fresh start
     clearSavedGameState();
@@ -475,6 +652,19 @@ export const useGameState = () => {
     return gameState.moveHistory;
   }, [gameState.moveHistory]);
 
+  // AI utility functions
+  const isAITurn = useCallback(() => {
+    return aiRef.current?.isAITurn() || false;
+  }, [gameState.currentPlayer]);
+
+  const getAIColor = useCallback(() => {
+    return aiRef.current?.getAIColor() || null;
+  }, []);
+
+  const isAIGame = useCallback(() => {
+    return gameState.gameMode === 'human-vs-ai';
+  }, [gameState.gameMode]);
+
   return {
     gameState,
     actions: {
@@ -482,6 +672,7 @@ export const useGameState = () => {
       deselectPiece,
       makeMove,
       startGame,
+      switchGameMode,
       resetGame,
       highlightMoves,
       clearHighlights,
@@ -497,6 +688,11 @@ export const useGameState = () => {
       isCurrentPlayerTurn,
       getValidMovesForCurrentPlayer,
       getMoveHistory,
+    },
+    ai: {
+      isAITurn,
+      getAIColor,
+      isAIGame,
     },
     isLoading,
     error,

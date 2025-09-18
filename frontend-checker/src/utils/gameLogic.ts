@@ -200,7 +200,9 @@ export const getMiddlePosition = (from: Position, to: Position): Position => {
 
 // Check if a move is a capture move
 export const isCaptureMove = (from: Position, to: Position): boolean => {
-  return getDistance(from, to) === GAME_RULES.CAPTURE_DISTANCE;
+  const rowDiff = Math.abs(to.row - from.row);
+  const colDiff = Math.abs(to.col - from.col);
+  return rowDiff === 2 && colDiff === 2;
 };
 
 // Get all pieces that can capture

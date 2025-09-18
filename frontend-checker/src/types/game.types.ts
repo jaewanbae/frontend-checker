@@ -137,7 +137,8 @@ export type GameAction =
   | { type: 'HIGHLIGHT_MOVES'; positions: Position[] }
   | { type: 'CLEAR_HIGHLIGHTS' }
   | { type: 'LOAD_SAVED_GAME'; savedState: Partial<GameState> }
-  | { type: 'UNDO_MOVE' };
+  | { type: 'UNDO_MOVE' }
+  | { type: 'SWITCH_GAME_MODE'; mode: GameMode };
 
 // Hook return types
 export interface UseGameStateReturn {
@@ -187,6 +188,10 @@ declare module 'styled-components' {
       selected: string;
       validMove: string;
       invalidMove: string;
+      border: string;
+      light: string;
+      dark: string;
+      error: string;
     };
     spacing: {
       xs: string;

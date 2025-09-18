@@ -1,239 +1,191 @@
-import { Board, Move, PieceColor, AIMove, AIConfig } from '../types/game.types';
-import { getValidMovesForPlayer } from './moveValidation';
-import { promoteToKing, canPromoteToKing } from './gameLogic';
+import { Board, Piece, Move, PieceColor, GameState } from '../types/game.types';
+import { getValidMovesForPlayer, findJumpSequences } from './moveValidation';
+import { GameRulesEngine } from './gameRules';
 
-// Default AI configuration
-const DEFAULT_AI_CONFIG: AIConfig = {
-  difficulty: 'medium',
-  maxDepth: 3,
-  useMinimax: true,
-  useAlphaBeta: true,
-};
+/**
+ * AI Player for Checkers Game
+ * Implements a "dumb" AI that follows basic checkers strategy:
+ * 1. Makes jump moves if available
+ * 2. Prioritizes sequential jumps over single jumps
+ * 3. If no jumps available, makes random valid moves
+ * 4. Never makes illegal moves
+ */
+export class CheckersAI {
+  private gameEngine: GameRulesEngine;
+  private aiColor: PieceColor;
 
-// Evaluate the current board position
-export const evaluateBoard = (
-  board: Board,
-  playerColor: PieceColor
-): number => {
-  let score = 0;
-
-  for (let row = 0; row < board.size; row++) {
-    for (let col = 0; col < board.size; col++) {
-      const piece = board.squares[row][col];
-      if (!piece) continue;
-
-      let pieceValue = piece.isKing ? 3 : 1;
-
-      // Add positional bonus for pieces closer to opponent's side
-      if (piece.color === 'light') {
-        pieceValue += (7 - row) * 0.1;
-      } else {
-        pieceValue += row * 0.1;
-      }
-
-      // Add king bonus
-      if (piece.isKing) {
-        pieceValue += 0.5;
-      }
-
-      // Add or subtract based on piece ownership
-      score += piece.color === playerColor ? pieceValue : -pieceValue;
-    }
+  constructor(gameEngine: GameRulesEngine, aiColor: PieceColor) {
+    this.gameEngine = gameEngine;
+    this.aiColor = aiColor;
   }
 
-  return score;
-};
+  /**
+   * Get the best move for the AI player
+   * @returns The move the AI wants to make, or null if no valid moves
+   */
+  getBestMove(): Move | null {
+    const gameState = this.gameEngine.getGameState();
 
-// Get a random valid move
-export const getRandomMove = (board: Board, color: PieceColor): Move | null => {
-  const validMoves = getValidMovesForPlayer(board, color);
+    console.log('AI getBestMove called:', {
+      currentPlayer: gameState.currentPlayer,
+      aiColor: this.aiColor,
+      hasCurrentJumpingPiece: !!gameState.currentJumpingPiece,
+      currentJumpingPiecePosition: gameState.currentJumpingPiece?.position,
+    });
 
-  if (validMoves.length === 0) {
-    return null;
-  }
-
-  const randomIndex = Math.floor(Math.random() * validMoves.length);
-  return validMoves[randomIndex];
-};
-
-// Get the best move using minimax algorithm
-export const getBestMove = (
-  board: Board,
-  color: PieceColor,
-  config: AIConfig = DEFAULT_AI_CONFIG
-): Move | null => {
-  if (!config.useMinimax) {
-    return getRandomMove(board, color);
-  }
-
-  const bestMove = minimax(
-    board,
-    color,
-    config.maxDepth,
-    true,
-    -Infinity,
-    Infinity,
-    config
-  );
-  return bestMove.move;
-};
-
-// Minimax algorithm with alpha-beta pruning
-const minimax = (
-  board: Board,
-  playerColor: PieceColor,
-  depth: number,
-  isMaximizing: boolean,
-  alpha: number,
-  beta: number,
-  config: AIConfig
-): AIMove => {
-  // Base case: depth reached or game over
-  if (depth === 0) {
-    const score = evaluateBoard(board, playerColor);
-    return { move: null as any, score, depth: config.maxDepth - depth };
-  }
-
-  const currentColor = isMaximizing
-    ? playerColor
-    : playerColor === PieceColor.LIGHT
-      ? PieceColor.DARK
-      : PieceColor.LIGHT;
-  const validMoves = getValidMovesForPlayer(board, currentColor);
-
-  if (validMoves.length === 0) {
-    const score = evaluateBoard(board, playerColor);
-    return { move: null as any, score, depth: config.maxDepth - depth };
-  }
-
-  let bestMove: Move | null = null;
-  let bestScore = isMaximizing ? -Infinity : Infinity;
-
-  for (const move of validMoves) {
-    // Make the move
-    const newBoard = makeMoveOnBoard(board, move);
-
-    // Recursive call
-    const result = minimax(
-      newBoard,
-      playerColor,
-      depth - 1,
-      !isMaximizing,
-      alpha,
-      beta,
-      config
+    // Always use the same move generation logic - getValidMovesForPlayer handles
+    // both normal moves and sequential jump moves correctly
+    const validMoves = getValidMovesForPlayer(
+      gameState.board,
+      this.aiColor,
+      gameState.currentJumpingPiece
     );
 
-    // Update best move and score
-    const isBetter = isMaximizing
-      ? result.score > bestScore
-      : result.score < bestScore;
-    if (isBetter) {
-      bestScore = result.score;
-      bestMove = move;
+    console.log('AI found valid moves:', {
+      total: validMoves.length,
+      captures: validMoves.filter(m => m.isCapture).length,
+      multipleJumps: validMoves.filter(m => m.isMultipleJump).length,
+    });
+
+    if (validMoves.length === 0) {
+      console.log('AI: No valid moves found');
+      return null;
     }
 
-    if (isMaximizing) {
-      alpha = Math.max(alpha, result.score);
-    } else {
-      beta = Math.min(beta, result.score);
+    // Separate capture moves from regular moves
+    const captureMoves = validMoves.filter(move => move.isCapture);
+    const regularMoves = validMoves.filter(move => !move.isCapture);
+
+    // If there are capture moves, prioritize them
+    if (captureMoves.length > 0) {
+      console.log('AI: Prioritizing capture moves');
+      return this.selectBestCaptureMove(captureMoves, gameState);
     }
 
-    // Alpha-beta pruning
-    if (config.useAlphaBeta && beta <= alpha) {
-      break;
+    // If no capture moves, select from regular moves
+    if (regularMoves.length > 0) {
+      console.log('AI: Selecting from regular moves');
+      return this.selectRandomMove(regularMoves);
     }
+
+    // Fallback (shouldn't happen due to validation above)
+    console.log('AI: Using fallback move');
+    return validMoves[0];
   }
 
-  return { move: bestMove!, score: bestScore, depth: config.maxDepth - depth };
-};
+  /**
+   * Select the best capture move from available capture moves
+   * Prioritizes sequential jumps over single jumps
+   */
+  private selectBestCaptureMove(
+    captureMoves: Move[],
+    gameState: GameState
+  ): Move {
+    // Use the utility function to get sequential jump moves
+    const sequentialJumpMoves = getSequentialJumpMoves(gameState, this.aiColor);
 
-// Make a move on the board (creates a new board state)
-const makeMoveOnBoard = (board: Board, move: Move): Board => {
-  const newBoard = { ...board, squares: board.squares.map(row => [...row]) };
+    if (sequentialJumpMoves.length > 0) {
+      // Prioritize sequential jumps
+      console.log(
+        'AI found sequential jump moves:',
+        sequentialJumpMoves.length
+      );
+      return this.selectRandomMove(sequentialJumpMoves);
+    }
 
-  // Remove piece from original position
-  newBoard.squares[move.from.row][move.from.col] = null;
-
-  // Handle capture
-  if (move.capturedPiece) {
-    newBoard.squares[move.capturedPiece.position.row][
-      move.capturedPiece.position.col
-    ] = null;
+    // If no sequential jumps, select from single capture moves
+    console.log('AI selecting from single capture moves:', captureMoves.length);
+    return this.selectRandomMove(captureMoves);
   }
 
-  // Place piece at new position
-  let newPiece = { ...move.piece, position: move.to };
-
-  // Handle kinging
-  if (canPromoteToKing(newPiece, move.to)) {
-    newPiece = promoteToKing(newPiece);
+  /**
+   * Select a random move from the given array of moves
+   */
+  private selectRandomMove(moves: Move[]): Move {
+    const randomIndex = Math.floor(Math.random() * moves.length);
+    return moves[randomIndex];
   }
 
-  newBoard.squares[move.to.row][move.to.col] = newPiece;
+  /**
+   * Execute the AI's move
+   * @returns true if move was successful, false otherwise
+   */
+  makeMove(): boolean {
+    const move = this.getBestMove();
 
-  return newBoard;
-};
+    if (!move) {
+      return false;
+    }
 
-// Get AI move based on difficulty
-export const getAIMove = (
-  board: Board,
-  color: PieceColor,
-  difficulty: 'easy' | 'medium' | 'hard' = 'medium'
-): Move | null => {
-  const config: AIConfig = {
-    difficulty,
-    maxDepth: difficulty === 'easy' ? 1 : difficulty === 'medium' ? 3 : 5,
-    useMinimax: difficulty !== 'easy',
-    useAlphaBeta: difficulty === 'hard',
-  };
-
-  return getBestMove(board, color, config);
-};
-
-// Check if AI should make a move
-export const shouldAIMove = (board: Board, color: PieceColor): boolean => {
-  const validMoves = getValidMovesForPlayer(board, color);
-  return validMoves.length > 0;
-};
-
-// Get AI thinking time (for UI feedback)
-export const getAIThinkingTime = (
-  difficulty: 'easy' | 'medium' | 'hard'
-): number => {
-  switch (difficulty) {
-    case 'easy':
-      return 500 + Math.random() * 1000; // 0.5-1.5 seconds
-    case 'medium':
-      return 1000 + Math.random() * 2000; // 1-3 seconds
-    case 'hard':
-      return 2000 + Math.random() * 3000; // 2-5 seconds
-    default:
-      return 1000;
+    return this.gameEngine.executeMove(move);
   }
-};
 
-// Analyze the current position
-export const analyzePosition = (
-  board: Board,
-  color: PieceColor
-): {
-  score: number;
-  bestMove: Move | null;
-  threats: Move[];
-  opportunities: Move[];
-} => {
-  const score = evaluateBoard(board, color);
-  const bestMove = getBestMove(board, color);
-  const validMoves = getValidMovesForPlayer(board, color);
+  /**
+   * Check if it's the AI's turn
+   */
+  isAITurn(): boolean {
+    return this.gameEngine.getCurrentPlayer() === this.aiColor;
+  }
 
-  const threats = validMoves.filter(move => move.isCapture);
-  const opportunities = validMoves.filter(move => !move.isCapture);
+  /**
+   * Get the AI's color
+   */
+  getAIColor(): PieceColor {
+    return this.aiColor;
+  }
 
-  return {
-    score,
-    bestMove,
-    threats,
-    opportunities,
-  };
-};
+  /**
+   * Update the game engine reference (useful when game state changes)
+   */
+  updateGameEngine(gameEngine: GameRulesEngine): void {
+    this.gameEngine = gameEngine;
+  }
+}
+
+/**
+ * Factory function to create an AI player
+ */
+export function createCheckersAI(
+  gameEngine: GameRulesEngine,
+  aiColor: PieceColor
+): CheckersAI {
+  return new CheckersAI(gameEngine, aiColor);
+}
+
+/**
+ * Utility function to determine if a move is a sequential jump
+ * (has multiple jumps in sequence)
+ */
+export function isSequentialJump(move: Move, gameState: GameState): boolean {
+  if (!move.isCapture) {
+    return false;
+  }
+
+  // Check if this move leads to more jumps
+  const piece = move.piece;
+  const jumpSequences = findJumpSequences(gameState.board, piece, move.to);
+
+  return jumpSequences.some(sequence => sequence.length > 1);
+}
+
+/**
+ * Get all possible sequential jump moves for a player
+ */
+export function getSequentialJumpMoves(
+  gameState: GameState,
+  playerColor: PieceColor
+): Move[] {
+  const validMoves = getValidMovesForPlayer(gameState.board, playerColor);
+
+  return validMoves.filter(move => {
+    if (!move.isCapture) return false;
+
+    // Check if this move can lead to more jumps
+    const jumpSequences = findJumpSequences(
+      gameState.board,
+      move.piece,
+      move.to
+    );
+    return jumpSequences.some(sequence => sequence.length > 1);
+  });
+}

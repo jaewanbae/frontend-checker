@@ -4,6 +4,7 @@ import { Board } from '../Board/Board';
 import { Square } from '../Square/Square';
 import { Piece } from '../Piece/Piece';
 import { MoveHistory } from '../UI/MoveHistory';
+import AIToggle from '../UI/AIToggle';
 import { useGameState } from '../../hooks/useGameState';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 import { PieceColor, Move } from '../../types/game.types';
@@ -99,12 +100,22 @@ const GameInfo = styled.div`
   box-shadow: ${({ theme }) => theme.shadows.sm};
 `;
 
+const GameControls = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${UI_CONFIG.GAP_SMALL};
+  margin-bottom: ${UI_CONFIG.GAP_MEDIUM};
+`;
+
 const PlayerInfo = styled.div<{ isActive: boolean }>`
   padding: ${UI_CONFIG.GAP_SMALL} ${UI_CONFIG.GAP_MEDIUM};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   background-color: ${({ isActive, theme }) =>
     isActive ? theme.colors.selected : 'transparent'};
   transition: ${({ theme }) => theme.transitions.fast};
+  min-width: 140px; /* Ensure consistent width to prevent UI shifting */
+  text-align: center;
 `;
 
 const GameButton = styled.button`
@@ -184,6 +195,15 @@ export const GameController: React.FC<GameControllerProps> = () => {
                 return; // Don't allow interactions if game hasn't started
               }
 
+              // Don't allow interactions if it's the AI's turn
+              if (
+                gameState.gameMode === GameMode.HUMAN_VS_AI &&
+                gameState.players.dark.isAI &&
+                gameState.currentPlayer === PieceColor.DARK
+              ) {
+                return;
+              }
+
               if (piece && piece.color === gameState.currentPlayer) {
                 actions.selectPiece(piece);
               } else if (isValidMove && gameState.selectedPiece) {
@@ -214,6 +234,15 @@ export const GameController: React.FC<GameControllerProps> = () => {
             onDrop={position => {
               if (gameState.gameStatus !== GameStatus.PLAYING) {
                 return; // Don't allow interactions if game hasn't started
+              }
+
+              // Don't allow interactions if it's the AI's turn
+              if (
+                gameState.gameMode === GameMode.HUMAN_VS_AI &&
+                gameState.players.dark.isAI &&
+                gameState.currentPlayer === PieceColor.DARK
+              ) {
+                return;
               }
 
               if (gameState.selectedPiece) {
@@ -250,13 +279,21 @@ export const GameController: React.FC<GameControllerProps> = () => {
                 isDragging={false}
                 isDisabled={
                   piece.color !== gameState.currentPlayer ||
-                  gameState.gameStatus !== GameStatus.PLAYING
+                  gameState.gameStatus !== GameStatus.PLAYING ||
+                  (gameState.gameMode === GameMode.HUMAN_VS_AI &&
+                    gameState.players.dark.isAI &&
+                    gameState.currentPlayer === PieceColor.DARK)
                 }
                 piece={piece}
                 onClick={() => {
                   if (
                     piece.color === gameState.currentPlayer &&
-                    gameState.gameStatus === GameStatus.PLAYING
+                    gameState.gameStatus === GameStatus.PLAYING &&
+                    !(
+                      gameState.gameMode === GameMode.HUMAN_VS_AI &&
+                      gameState.players.dark.isAI &&
+                      gameState.currentPlayer === PieceColor.DARK
+                    )
                   ) {
                     actions.selectPiece(piece);
                   }
@@ -264,7 +301,12 @@ export const GameController: React.FC<GameControllerProps> = () => {
                 onDragStart={draggedPiece => {
                   if (
                     draggedPiece.color === gameState.currentPlayer &&
-                    gameState.gameStatus === GameStatus.PLAYING
+                    gameState.gameStatus === GameStatus.PLAYING &&
+                    !(
+                      gameState.gameMode === GameMode.HUMAN_VS_AI &&
+                      gameState.players.dark.isAI &&
+                      gameState.currentPlayer === PieceColor.DARK
+                    )
                   ) {
                     onDragStart(draggedPiece);
                   }
@@ -287,13 +329,21 @@ export const GameController: React.FC<GameControllerProps> = () => {
       <GameHeader>
         <h1>{TEXT.GAME_TITLE}</h1>
         <p>{TEXT.GAME_INSTRUCTIONS}</p>
-        <div>
+        <GameControls>
           <StatusMessage>{gameRules.getGameStatusMessage()}</StatusMessage>
+          <AIToggle
+            isAIMode={gameState.gameMode === GameMode.HUMAN_VS_AI}
+            onToggle={isAIMode => {
+              const newMode = isAIMode
+                ? GameMode.HUMAN_VS_AI
+                : GameMode.HUMAN_VS_HUMAN;
+              actions.switchGameMode(newMode);
+            }}
+            disabled={false} /* Allow toggling before and during games */
+          />
           <div>
             {gameState.gameStatus === GameStatus.WAITING && (
-              <GameButton
-                onClick={() => actions.startGame(GameMode.HUMAN_VS_HUMAN)}
-              >
+              <GameButton onClick={() => actions.startGame(gameState.gameMode)}>
                 Start Game
               </GameButton>
             )}
@@ -306,7 +356,7 @@ export const GameController: React.FC<GameControllerProps> = () => {
               </GameButton>
             )}
           </div>
-        </div>
+        </GameControls>
       </GameHeader>
 
       <MainGameArea>
@@ -321,7 +371,11 @@ export const GameController: React.FC<GameControllerProps> = () => {
             </PlayerInfo>
             <div>{TEXT.VS_LABEL}</div>
             <PlayerInfo isActive={gameState.currentPlayer === PieceColor.DARK}>
-              <strong>{TEXT.PLAYER_2_LABEL}</strong>
+              <strong>
+                {gameState.gameMode === GameMode.HUMAN_VS_AI
+                  ? 'AI'
+                  : TEXT.PLAYER_2_LABEL}
+              </strong>
               <div>
                 {TEXT.PIECES_LABEL} {gameState.players.dark.piecesRemaining}
               </div>

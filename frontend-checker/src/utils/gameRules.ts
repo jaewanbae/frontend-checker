@@ -163,6 +163,8 @@ export class GameRulesEngine {
       move.to
     );
 
+    console.log('validation', validation);
+
     if (!validation.isValid) {
       return false;
     }
