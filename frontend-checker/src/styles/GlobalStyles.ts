@@ -21,6 +21,7 @@ export const GlobalStyles = createGlobalStyle<{ theme: Theme }>`
     -moz-osx-font-smoothing: grayscale;
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.textPrimary};
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   code {

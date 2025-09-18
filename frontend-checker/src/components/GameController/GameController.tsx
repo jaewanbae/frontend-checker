@@ -5,6 +5,7 @@ import { Square } from '../Square/Square';
 import { Piece } from '../Piece/Piece';
 import { MoveHistory } from '../UI/MoveHistory';
 import AIToggle from '../UI/AIToggle';
+import { ThemeToggle } from '../UI/ThemeToggle';
 import { useGameState } from '../../hooks/useGameState';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 import { PieceColor, Move } from '../../types/game.types';
@@ -148,12 +149,13 @@ const StatusMessage = styled.p`
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-interface GameControllerProps {
-  // Props will be defined when we implement the game logic
-  children?: React.ReactNode;
-}
+const ControlsRow = styled.div`
+  display: flex;
+  gap: 16px;
+  align-items: center;
+`;
 
-export const GameController: React.FC<GameControllerProps> = () => {
+export const GameController: React.FC = () => {
   const { gameState, actions, gameRules } = useGameState();
   const { onDragStart, onDragEnd, isOverValidDropZone } = useDragAndDrop({
     board: gameState.board,
@@ -268,6 +270,32 @@ export const GameController: React.FC<GameControllerProps> = () => {
     );
   };
 
+  // Render game button based on status
+  const renderGameButton = () => {
+    if (gameState.gameStatus === GameStatus.WAITING) {
+      return (
+        <GameButton onClick={() => actions.startGame(gameState.gameMode)}>
+          Start Game
+        </GameButton>
+      );
+    }
+
+    if (
+      gameState.gameStatus === GameStatus.PLAYING ||
+      gameState.gameStatus === GameStatus.FINISHED
+    ) {
+      return (
+        <GameButton onClick={() => actions.resetGame()}>
+          {gameState.gameStatus === GameStatus.FINISHED
+            ? 'Play Again'
+            : 'Reset Game'}
+        </GameButton>
+      );
+    }
+
+    return null;
+  };
+
   const renderBoard = () => {
     const squares = [];
     for (let row = 0; row < GAME_CONFIG.BOARD_SIZE; row++) {
@@ -328,26 +356,15 @@ export const GameController: React.FC<GameControllerProps> = () => {
         <p>{TEXT.GAME_INSTRUCTIONS}</p>
         <GameControls>
           <StatusMessage>{gameRules.getGameStatusMessage()}</StatusMessage>
-          <AIToggle
-            isAIMode={gameState.gameMode === GameMode.HUMAN_VS_AI}
-            onToggle={handleAIToggle}
-            disabled={false} /* Allow toggling before and during games */
-          />
-          <div>
-            {gameState.gameStatus === GameStatus.WAITING && (
-              <GameButton onClick={() => actions.startGame(gameState.gameMode)}>
-                Start Game
-              </GameButton>
-            )}
-            {(gameState.gameStatus === GameStatus.PLAYING ||
-              gameState.gameStatus === GameStatus.FINISHED) && (
-              <GameButton onClick={() => actions.resetGame()}>
-                {gameState.gameStatus === GameStatus.FINISHED
-                  ? 'Play Again'
-                  : 'Reset Game'}
-              </GameButton>
-            )}
-          </div>
+          <ControlsRow>
+            <AIToggle
+              isAIMode={gameState.gameMode === GameMode.HUMAN_VS_AI}
+              onToggle={handleAIToggle}
+              disabled={false} /* Allow toggling before and during games */
+            />
+            <ThemeToggle showLabel={true} />
+          </ControlsRow>
+          <div>{renderGameButton()}</div>
         </GameControls>
       </GameHeader>
 

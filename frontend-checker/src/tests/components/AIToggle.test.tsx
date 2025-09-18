@@ -2,11 +2,13 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from 'styled-components';
 import AIToggle from '../../components/UI/AIToggle';
-import { theme } from '../../styles/theme';
+import { themes } from '../../styles/theme';
 
 // Mock styled-components theme
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>);
+  return render(
+    <ThemeProvider theme={themes.light}>{component}</ThemeProvider>
+  );
 };
 
 describe('AIToggle Component', () => {
